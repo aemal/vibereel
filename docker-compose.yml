@@ -17,7 +17,7 @@ services:
       - N8N_ALLOW_FILE_ACCESS_TO=/tmp/videos
     volumes:
       - n8n_data:/home/node/.n8n
-      - /tmp/videos:/tmp/videos
+      - /tmp/videos:/home/node/.n8n-files
       - ~/.ssh:/home/node/.ssh:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
