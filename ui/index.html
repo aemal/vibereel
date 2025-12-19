@@ -48,6 +48,11 @@
             transition: all 0.3s ease;
         }
         .upload-section:hover { border-color: var(--accent-cyan); }
+        .upload-section.drag-over {
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 159, 0.1);
+            transform: scale(1.02);
+        }
         .upload-icon { font-size: 64px; margin-bottom: 20px; }
         .upload-text { font-size: 16px; margin-bottom: 10px; font-weight: 600; }
         
@@ -135,6 +140,7 @@
             const [seekTime, setSeekTime] = useState(10);
             const [dragging, setDragging] = useState(null);
             const [videoFrame, setVideoFrame] = useState(null);
+            const [dragOver, setDragOver] = useState(false);
             
             const fileInputRef = useRef(null);
             const videoRef = useRef(null);
@@ -142,6 +148,18 @@
 
             useEffect(() => {
                 loadModels();
+
+                // Prevent default browser drag and drop behavior
+                const handleGlobalDragOver = (e) => e.preventDefault();
+                const handleGlobalDrop = (e) => e.preventDefault();
+
+                document.addEventListener('dragover', handleGlobalDragOver);
+                document.addEventListener('drop', handleGlobalDrop);
+
+                return () => {
+                    document.removeEventListener('dragover', handleGlobalDragOver);
+                    document.removeEventListener('drop', handleGlobalDrop);
+                };
             }, []);
 
             useEffect(() => {
@@ -165,6 +183,34 @@
                     setVideo(file);
                     setVideoUrl(URL.createObjectURL(file));
                     setBoxes([]);
+                }
+            };
+
+            const handleDragOver = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragOver(true);
+            };
+
+            const handleDragLeave = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragOver(false);
+            };
+
+            const handleDrop = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragOver(false);
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('video/')) {
+                        handleFileSelect(file);
+                    } else {
+                        alert('Please upload a video file');
+                    }
                 }
             };
 
@@ -479,9 +525,17 @@
                                 4. Copy FFmpeg commands → cut1.mp4 (1080×960), cut2.mp4 (1080×960), merged.mp4 (1080×1920)
                             </div>
                             
-                            <div className="upload-section" onClick={() => fileInputRef.current.click()}>
+                            <div
+                                className={`upload-section ${dragOver ? 'drag-over' : ''}`}
+                                onClick={() => fileInputRef.current.click()}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                            >
                                 <div className="upload-icon">🎥</div>
-                                <div className="upload-text">Upload Google Meet Recording</div>
+                                <div className="upload-text">
+                                    {dragOver ? 'Drop video file here' : 'Click to upload or drag & drop video file'}
+                                </div>
                                 <input ref={fileInputRef} type="file" accept="video/*" onChange={(e) => handleFileSelect(e.target.files[0])} />
                             </div>
                         </>
