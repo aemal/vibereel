@@ -1,0 +1,299 @@
+// n8n Code Node - Whisper Transcription Data Processor
+// Processes Whisper API transcription output with segments and word-level timing
+// Compatible with n8n workflow automation
+
+// Get input data from n8n
+const items = $input.all();
+
+function processTranscriptionData(data) {
+  // Extract main text
+  const fullText = data.text || '';
+
+  // Process segments
+  const segments = (data.segments || []).map((segment, index) => {
+    return {
+      id: segment.id || index,
+      startTime: segment.start || 0,
+      endTime: segment.end || 0,
+      duration: (segment.end || 0) - (segment.start || 0),
+      text: segment.text || '',
+
+      // Include word-level data for karaoke subtitles
+      words: segment.words || [],
+
+      // Confidence metrics
+      avgLogProb: segment.avg_logprob || 0,
+      noSpeechProb: segment.no_speech_prob || 0,
+      temperature: segment.temperature || 0,
+      compressionRatio: segment.compression_ratio || 0,
+
+      // Word count and timing analysis
+      wordCount: (segment.words || []).length,
+      wordsPerSecond: segment.words ?
+        segment.words.length / ((segment.end || 0) - (segment.start || 0) || 1) : 0,
+
+      // Extract high-confidence words (probability > 0.8)
+      highConfidenceWords: (segment.words || []).filter(word =>
+        (word.probability || 0) > 0.8
+      ).map(word => word.word).join(' '),
+
+      // Extract low-confidence words (probability < 0.5) for review
+      lowConfidenceWords: (segment.words || []).filter(word =>
+        (word.probability || 0) < 0.5
+      ).map(word => ({
+        word: word.word,
+        probability: word.probability,
+        start: word.start,
+        end: word.end
+      }))
+    };
+  });
+
+  // Generate summary statistics
+  const stats = {
+    totalDuration: segments.length > 0 ?
+      Math.max(...segments.map(s => s.endTime)) : 0,
+    totalSegments: segments.length,
+    totalWords: segments.reduce((sum, seg) => sum + seg.wordCount, 0),
+    averageConfidence: segments.length > 0 ?
+      segments.reduce((sum, seg) => sum + Math.abs(seg.avgLogProb), 0) / segments.length : 0,
+    languageDetected: data.language || 'unknown',
+
+    // Identify segments with potential issues
+    lowConfidenceSegments: segments.filter(seg => seg.avgLogProb < -0.5).length,
+    highNoSpeechSegments: segments.filter(seg => seg.noSpeechProb > 0.1).length
+  };
+
+  // Extract timestamps for easy navigation
+  const timeMarkers = segments.map(segment => ({
+    segmentId: segment.id,
+    timestamp: segment.startTime,
+    text: segment.text.substring(0, 50) + (segment.text.length > 50 ? '...' : ''),
+    confidence: Math.abs(segment.avgLogProb)
+  }));
+
+  // Generate cleaned transcript (remove filler words, fix spacing)
+  const cleanedText = fullText
+    .replace(/\s+/g, ' ')  // Multiple spaces to single
+    .replace(/\b(um|uh|er|ah)\b/gi, '')  // Remove common filler words
+    .replace(/\s+/g, ' ')  // Clean up spaces after filler removal
+    .trim();
+
+  // Split into paragraphs based on longer pauses (gaps > 2 seconds)
+  const paragraphs = [];
+  let currentParagraph = [];
+
+  for (let i = 0; i < segments.length; i++) {
+    const currentSegment = segments[i];
+    const nextSegment = segments[i + 1];
+
+    currentParagraph.push(currentSegment.text.trim());
+
+    // End paragraph if there's a significant pause or it's the last segment
+    if (!nextSegment || (nextSegment.startTime - currentSegment.endTime) > 2) {
+      if (currentParagraph.length > 0) {
+        paragraphs.push(currentParagraph.join(' ').trim());
+        currentParagraph = [];
+      }
+    }
+  }
+
+  return {
+    // Original data
+    originalText: fullText,
+    language: data.language,
+
+    // Processed data
+    cleanedText,
+    paragraphs,
+    segments,
+
+    // Analytics
+    statistics: stats,
+    timeMarkers,
+
+    // For further processing
+    exportFormats: {
+      srt: generateSRT(segments),
+      vtt: generateVTT(segments),
+      ass: generateASS(segments),
+      plainText: cleanedText,
+      wordTimings: extractWordTimings(data.segments || [])
+    }
+  };
+}
+
+// Generate SRT subtitle format
+function generateSRT(segments) {
+  return segments.map((segment, index) => {
+    const startTime = formatTime(segment.startTime);
+    const endTime = formatTime(segment.endTime);
+    return `${index + 1}\n${startTime} --> ${endTime}\n${segment.text.trim()}\n`;
+  }).join('\n');
+}
+
+// Generate WebVTT subtitle format
+function generateVTT(segments) {
+  const vttHeader = 'WEBVTT\n\n';
+  const vttContent = segments.map((segment, index) => {
+    const startTime = formatTime(segment.startTime, true);
+    const endTime = formatTime(segment.endTime, true);
+    return `${startTime} --> ${endTime}\n${segment.text.trim()}\n`;
+  }).join('\n');
+  return vttHeader + vttContent;
+}
+
+// Generate ASS subtitle format with karaoke-style word-by-word timing
+function generateASS(segments) {
+  const assHeader = `[Script Info]
+Title: Karaoke Subtitles
+ScriptType: v4.00+
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+YCbCr Matrix: TV.601
+PlayResX: 1920
+PlayResY: 1080
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,84,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,4,5,50,50,50,1
+Style: Karaoke,Arial,84,&H0000FFFF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,4,5,50,50,50,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+`;
+
+  const assEvents = [];
+
+  segments.forEach(segment => {
+    if (segment.words && segment.words.length > 0) {
+      // Create karaoke-style word-by-word events
+      segment.words.forEach(word => {
+        const startTime = formatASSTime(word.start || segment.startTime);
+        const endTime = formatASSTime(word.end || segment.endTime);
+        const cleanWord = (word.word || '').trim().replace(/\n/g, '\\N');
+
+        if (cleanWord) {
+          assEvents.push(`Dialogue: 0,${startTime},${endTime},Karaoke,,0,0,0,,${cleanWord}`);
+        }
+      });
+    } else {
+      // Fallback: split text by words if no word-level timing available
+      const words = segment.text.trim().split(/\s+/);
+      const segmentDuration = segment.endTime - segment.startTime;
+      const timePerWord = segmentDuration / words.length;
+
+      words.forEach((word, index) => {
+        const wordStart = segment.startTime + (index * timePerWord);
+        const wordEnd = segment.startTime + ((index + 1) * timePerWord);
+        const startTime = formatASSTime(wordStart);
+        const endTime = formatASSTime(wordEnd);
+        const cleanWord = word.replace(/\n/g, '\\N');
+
+        if (cleanWord) {
+          assEvents.push(`Dialogue: 0,${startTime},${endTime},Karaoke,,0,0,0,,${cleanWord}`);
+        }
+      });
+    }
+  });
+
+  return assHeader + assEvents.join('\n');
+}
+
+// Format time for ASS subtitles (H:MM:SS.cc)
+function formatASSTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  const centiseconds = Math.floor((seconds % 1) * 100);
+
+  return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
+}
+
+// Format time for subtitles (HH:MM:SS,mmm for SRT, HH:MM:SS.mmm for VTT)
+function formatTime(seconds, isVTT = false) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  const ms = Math.floor((seconds % 1) * 1000);
+
+  const separator = isVTT ? '.' : ',';
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}${separator}${ms.toString().padStart(3, '0')}`;
+}
+
+// Extract word-level timings
+function extractWordTimings(segments) {
+  const wordTimings = [];
+
+  segments.forEach(segment => {
+    if (segment.words) {
+      segment.words.forEach(word => {
+        wordTimings.push({
+          word: word.word?.trim(),
+          start: word.start,
+          end: word.end,
+          duration: (word.end || 0) - (word.start || 0),
+          probability: word.probability,
+          segmentId: segment.id
+        });
+      });
+    }
+  });
+
+  return wordTimings;
+}
+
+// Process all input items for n8n
+const processedItems = items.map(item => {
+  try {
+    // Handle different input structures
+    let transcriptionData;
+
+    // Check if data is in binary format first
+    if (item.binary && item.binary.data) {
+      // If it's binary data, try to parse it
+      try {
+        const binaryData = item.binary.data;
+        transcriptionData = JSON.parse(binaryData);
+      } catch (e) {
+        console.log('Failed to parse binary data:', e);
+        transcriptionData = item.json || item;
+      }
+    } else if (item.json) {
+      transcriptionData = item.json;
+    } else {
+      transcriptionData = item;
+    }
+
+    // Process the transcription data
+    const processed = processTranscriptionData(transcriptionData);
+
+    return {
+      json: {
+        success: true,
+        processed: processed,
+        metadata: {
+          processedAt: new Date().toISOString(),
+          processingTime: Date.now() - (new Date().getTime()),
+          inputType: 'whisper-transcription'
+        }
+      }
+    };
+
+  } catch (error) {
+    return {
+      json: {
+        success: false,
+        error: error.message,
+        originalData: item,
+        metadata: {
+          processedAt: new Date().toISOString(),
+          inputType: 'error'
+        }
+      }
+    };
+  }
+});
+
+// Return processed items for n8n
+return processedItems;

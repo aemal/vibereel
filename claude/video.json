@@ -1,0 +1,1052 @@
+{
+  "text": " I'm with Alicia, and she has built an innate workflow that helps a son to fish scholarships. Alicia, what did you build? Tell us more about that. Okay, so the scholarship workflow, research workflow that I built using innate and actually aggregates different scholarships that's tailored specifically to my son, and so it is using his personal information with regards to all his demographic information, his interest, his bracket sheet, everything to actually scrape different websites through Tabli and the SERP AI. Those are the two search nodes that I have integrated into the agent. Wonderful, and one thing it's worth mentioning that Alicia is not a software engineer. Yes, that's so cool. I'm an economist by profession. That's wonderful. I have zero software engineering background, but for some reason I have gravitated towards a tech world and have become a quasi-software engineer it seems.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 6.64,
+      "text": " I'm with Alicia, and she has built an innate workflow that helps a son to fish scholarships.",
+      "tokens": [
+        50364, 286, 478, 365, 38153, 11, 293, 750, 575, 3094, 364, 41766, 20993,
+        300, 3665, 257, 1872, 281, 3506, 28474, 13, 50692
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2006613314151764,
+      "compression_ratio": 1.5944444444444446,
+      "no_speech_prob": 0.03206869587302208,
+      "words": [
+        {
+          "word": " I'm",
+          "start": 0.0,
+          "end": 0.4,
+          "probability": 0.6527446657419205
+        },
+        {
+          "word": " with",
+          "start": 0.4,
+          "end": 0.64,
+          "probability": 0.9863085150718689
+        },
+        {
+          "word": " Alicia,",
+          "start": 0.64,
+          "end": 0.98,
+          "probability": 0.7589511275291443
+        },
+        {
+          "word": " and",
+          "start": 1.46,
+          "end": 1.46,
+          "probability": 0.9107301831245422
+        },
+        {
+          "word": " she",
+          "start": 1.46,
+          "end": 1.74,
+          "probability": 0.9956566095352173
+        },
+        {
+          "word": " has",
+          "start": 1.74,
+          "end": 2.14,
+          "probability": 0.9797425866127014
+        },
+        {
+          "word": " built",
+          "start": 2.14,
+          "end": 2.54,
+          "probability": 0.9795475602149963
+        },
+        {
+          "word": " an",
+          "start": 2.54,
+          "end": 3.04,
+          "probability": 0.8390932083129883
+        },
+        {
+          "word": " innate",
+          "start": 3.04,
+          "end": 3.18,
+          "probability": 0.46002185344696045
+        },
+        {
+          "word": " workflow",
+          "start": 3.18,
+          "end": 3.64,
+          "probability": 0.6039931774139404
+        },
+        {
+          "word": " that",
+          "start": 3.64,
+          "end": 3.94,
+          "probability": 0.976235032081604
+        },
+        {
+          "word": " helps",
+          "start": 3.94,
+          "end": 4.22,
+          "probability": 0.9955497980117798
+        },
+        {
+          "word": " a",
+          "start": 4.22,
+          "end": 4.58,
+          "probability": 0.5137079358100891
+        },
+        {
+          "word": " son",
+          "start": 4.58,
+          "end": 5.0,
+          "probability": 0.9642161130905151
+        },
+        {
+          "word": " to",
+          "start": 5.0,
+          "end": 5.82,
+          "probability": 0.9572210907936096
+        },
+        {
+          "word": " fish",
+          "start": 5.82,
+          "end": 6.2,
+          "probability": 0.8539407849311829
+        },
+        {
+          "word": " scholarships.",
+          "start": 6.2,
+          "end": 6.64,
+          "probability": 0.9814459681510925
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 6.96,
+      "end": 15.02,
+      "text": " Alicia, what did you build? Tell us more about that. Okay, so the scholarship workflow, research",
+      "tokens": [
+        50692, 38153, 11, 437, 630, 291, 1322, 30, 5115, 505, 544, 466, 300, 13,
+        1033, 11, 370, 264, 16178, 20993, 11, 2132, 51108
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2006613314151764,
+      "compression_ratio": 1.5944444444444446,
+      "no_speech_prob": 0.03206869587302208,
+      "words": [
+        {
+          "word": " Alicia,",
+          "start": 6.96,
+          "end": 7.04,
+          "probability": 0.9515209794044495
+        },
+        {
+          "word": " what",
+          "start": 7.1,
+          "end": 7.2,
+          "probability": 0.9789930582046509
+        },
+        {
+          "word": " did",
+          "start": 7.2,
+          "end": 7.4,
+          "probability": 0.9801902174949646
+        },
+        {
+          "word": " you",
+          "start": 7.4,
+          "end": 7.58,
+          "probability": 0.9985859394073486
+        },
+        {
+          "word": " build?",
+          "start": 7.58,
+          "end": 7.7,
+          "probability": 0.9750587344169617
+        },
+        {
+          "word": " Tell",
+          "start": 7.76,
+          "end": 7.88,
+          "probability": 0.9740084409713745
+        },
+        {
+          "word": " us",
+          "start": 7.88,
+          "end": 8.06,
+          "probability": 0.9981027245521545
+        },
+        {
+          "word": " more",
+          "start": 8.06,
+          "end": 8.22,
+          "probability": 0.9942108392715454
+        },
+        {
+          "word": " about",
+          "start": 8.22,
+          "end": 8.48,
+          "probability": 0.9967684745788574
+        },
+        {
+          "word": " that.",
+          "start": 8.48,
+          "end": 9.2,
+          "probability": 0.9963669776916504
+        },
+        {
+          "word": " Okay,",
+          "start": 10.12,
+          "end": 10.56,
+          "probability": 0.6135832071304321
+        },
+        {
+          "word": " so",
+          "start": 10.86,
+          "end": 11.28,
+          "probability": 0.9773343205451965
+        },
+        {
+          "word": " the",
+          "start": 11.28,
+          "end": 12.48,
+          "probability": 0.9371795654296875
+        },
+        {
+          "word": " scholarship",
+          "start": 12.48,
+          "end": 13.26,
+          "probability": 0.7845472097396851
+        },
+        {
+          "word": " workflow,",
+          "start": 13.26,
+          "end": 14.38,
+          "probability": 0.9044411182403564
+        },
+        {
+          "word": " research",
+          "start": 14.58,
+          "end": 15.02,
+          "probability": 0.961479663848877
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 15.02,
+      "end": 23.02,
+      "text": " workflow that I built using innate and actually aggregates different scholarships that's tailored",
+      "tokens": [
+        51108, 20993, 300, 286, 3094, 1228, 41766, 293, 767, 16743, 1024, 819,
+        28474, 300, 311, 34858, 51508
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2006613314151764,
+      "compression_ratio": 1.5944444444444446,
+      "no_speech_prob": 0.03206869587302208,
+      "words": [
+        {
+          "word": " workflow",
+          "start": 15.02,
+          "end": 15.7,
+          "probability": 0.9871970415115356
+        },
+        {
+          "word": " that",
+          "start": 15.7,
+          "end": 16.04,
+          "probability": 0.7528183460235596
+        },
+        {
+          "word": " I",
+          "start": 16.04,
+          "end": 16.26,
+          "probability": 0.9951110482215881
+        },
+        {
+          "word": " built",
+          "start": 16.26,
+          "end": 16.44,
+          "probability": 0.7952321171760559
+        },
+        {
+          "word": " using",
+          "start": 16.44,
+          "end": 16.86,
+          "probability": 0.9840186238288879
+        },
+        {
+          "word": " innate",
+          "start": 16.86,
+          "end": 17.2,
+          "probability": 0.9744458794593811
+        },
+        {
+          "word": " and",
+          "start": 17.2,
+          "end": 17.76,
+          "probability": 0.6389583349227905
+        },
+        {
+          "word": " actually",
+          "start": 17.76,
+          "end": 18.58,
+          "probability": 0.9856029748916626
+        },
+        {
+          "word": " aggregates",
+          "start": 18.58,
+          "end": 19.96,
+          "probability": 0.9924243688583374
+        },
+        {
+          "word": " different",
+          "start": 19.96,
+          "end": 21.22,
+          "probability": 0.9060649871826172
+        },
+        {
+          "word": " scholarships",
+          "start": 21.22,
+          "end": 21.88,
+          "probability": 0.99790358543396
+        },
+        {
+          "word": " that's",
+          "start": 21.88,
+          "end": 22.66,
+          "probability": 0.8323150277137756
+        },
+        {
+          "word": " tailored",
+          "start": 22.66,
+          "end": 23.02,
+          "probability": 0.9983866214752197
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "seek": 2302,
+      "start": 23.02,
+      "end": 32.64,
+      "text": " specifically to my son, and so it is using his personal information with regards to all his",
+      "tokens": [
+        50364, 4682, 281, 452, 1872, 11, 293, 370, 309, 307, 1228, 702, 2973,
+        1589, 365, 14258, 281, 439, 702, 50836
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2603769302368164,
+      "compression_ratio": 1.5053191489361701,
+      "no_speech_prob": 0.4710891842842102,
+      "words": [
+        {
+          "word": " specifically",
+          "start": 23.02,
+          "end": 23.68,
+          "probability": 0.20157235860824585
+        },
+        {
+          "word": " to",
+          "start": 23.68,
+          "end": 24.08,
+          "probability": 0.9341544508934021
+        },
+        {
+          "word": " my",
+          "start": 24.08,
+          "end": 24.46,
+          "probability": 0.9975653886795044
+        },
+        {
+          "word": " son,",
+          "start": 24.46,
+          "end": 24.76,
+          "probability": 0.9979680180549622
+        },
+        {
+          "word": " and",
+          "start": 25.28,
+          "end": 25.68,
+          "probability": 0.8968985676765442
+        },
+        {
+          "word": " so",
+          "start": 25.68,
+          "end": 26.36,
+          "probability": 0.9917992353439331
+        },
+        {
+          "word": " it",
+          "start": 26.36,
+          "end": 26.58,
+          "probability": 0.9320977926254272
+        },
+        {
+          "word": " is",
+          "start": 26.58,
+          "end": 27.76,
+          "probability": 0.9974969029426575
+        },
+        {
+          "word": " using",
+          "start": 27.76,
+          "end": 28.4,
+          "probability": 0.9591072201728821
+        },
+        {
+          "word": " his",
+          "start": 28.4,
+          "end": 29.36,
+          "probability": 0.998573899269104
+        },
+        {
+          "word": " personal",
+          "start": 29.36,
+          "end": 30.08,
+          "probability": 0.9971261620521545
+        },
+        {
+          "word": " information",
+          "start": 30.08,
+          "end": 31.1,
+          "probability": 0.9983853101730347
+        },
+        {
+          "word": " with",
+          "start": 31.1,
+          "end": 31.38,
+          "probability": 0.860979437828064
+        },
+        {
+          "word": " regards",
+          "start": 31.38,
+          "end": 31.76,
+          "probability": 0.9816255569458008
+        },
+        {
+          "word": " to",
+          "start": 31.76,
+          "end": 32.24,
+          "probability": 0.9960533380508423
+        },
+        {
+          "word": " all",
+          "start": 32.24,
+          "end": 32.44,
+          "probability": 0.9809082746505737
+        },
+        {
+          "word": " his",
+          "start": 32.44,
+          "end": 32.64,
+          "probability": 0.7970635294914246
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "seek": 2302,
+      "start": 32.64,
+      "end": 41.34,
+      "text": " demographic information, his interest, his bracket sheet, everything to actually scrape different",
+      "tokens": [
+        50836, 26331, 1589, 11, 702, 1179, 11, 702, 16904, 8193, 11, 1203, 281,
+        767, 32827, 819, 51280
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2603769302368164,
+      "compression_ratio": 1.5053191489361701,
+      "no_speech_prob": 0.4710891842842102,
+      "words": [
+        {
+          "word": " demographic",
+          "start": 32.64,
+          "end": 33.3,
+          "probability": 0.9061843156814575
+        },
+        {
+          "word": " information,",
+          "start": 33.3,
+          "end": 34.08,
+          "probability": 0.8866920471191406
+        },
+        {
+          "word": " his",
+          "start": 34.28,
+          "end": 34.64,
+          "probability": 0.9961181879043579
+        },
+        {
+          "word": " interest,",
+          "start": 34.64,
+          "end": 35.22,
+          "probability": 0.5743141174316406
+        },
+        {
+          "word": " his",
+          "start": 35.7,
+          "end": 35.9,
+          "probability": 0.9747354984283447
+        },
+        {
+          "word": " bracket",
+          "start": 35.9,
+          "end": 36.26,
+          "probability": 0.39191997051239014
+        },
+        {
+          "word": " sheet,",
+          "start": 36.26,
+          "end": 36.74,
+          "probability": 0.9350572228431702
+        },
+        {
+          "word": " everything",
+          "start": 36.98,
+          "end": 37.42,
+          "probability": 0.9947375655174255
+        },
+        {
+          "word": " to",
+          "start": 37.42,
+          "end": 38.16,
+          "probability": 0.6601935029029846
+        },
+        {
+          "word": " actually",
+          "start": 38.16,
+          "end": 39.4,
+          "probability": 0.9982206225395203
+        },
+        {
+          "word": " scrape",
+          "start": 39.4,
+          "end": 40.24,
+          "probability": 0.9716104865074158
+        },
+        {
+          "word": " different",
+          "start": 40.24,
+          "end": 41.34,
+          "probability": 0.9798721671104431
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "seek": 2302,
+      "start": 41.34,
+      "end": 49.16,
+      "text": " websites through Tabli and the SERP AI. Those are the two search nodes that I have integrated",
+      "tokens": [
+        51280, 12891, 807, 14106, 2081, 293, 264, 36772, 47, 7318, 13, 3950,
+        366, 264, 732, 3164, 13891, 300, 286, 362, 10919, 51696
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2603769302368164,
+      "compression_ratio": 1.5053191489361701,
+      "no_speech_prob": 0.4710891842842102,
+      "words": [
+        {
+          "word": " websites",
+          "start": 41.34,
+          "end": 42.26,
+          "probability": 0.9439270496368408
+        },
+        {
+          "word": " through",
+          "start": 42.26,
+          "end": 42.64,
+          "probability": 0.992099940776825
+        },
+        {
+          "word": " Tabli",
+          "start": 42.64,
+          "end": 43.22,
+          "probability": 0.448227658867836
+        },
+        {
+          "word": " and",
+          "start": 43.22,
+          "end": 44.02,
+          "probability": 0.8120644688606262
+        },
+        {
+          "word": " the",
+          "start": 44.02,
+          "end": 44.18,
+          "probability": 0.4072829484939575
+        },
+        {
+          "word": " SERP",
+          "start": 44.18,
+          "end": 44.58,
+          "probability": 0.7675552070140839
+        },
+        {
+          "word": " AI.",
+          "start": 44.58,
+          "end": 44.9,
+          "probability": 0.3334517776966095
+        },
+        {
+          "word": " Those",
+          "start": 45.0,
+          "end": 45.18,
+          "probability": 0.9942095279693604
+        },
+        {
+          "word": " are",
+          "start": 45.18,
+          "end": 45.38,
+          "probability": 0.9994767308235168
+        },
+        {
+          "word": " the",
+          "start": 45.38,
+          "end": 45.62,
+          "probability": 0.9954450130462646
+        },
+        {
+          "word": " two",
+          "start": 45.62,
+          "end": 47.24,
+          "probability": 0.9834274649620056
+        },
+        {
+          "word": " search",
+          "start": 47.24,
+          "end": 47.54,
+          "probability": 0.9603464603424072
+        },
+        {
+          "word": " nodes",
+          "start": 47.54,
+          "end": 47.7,
+          "probability": 0.6613865494728088
+        },
+        {
+          "word": " that",
+          "start": 47.7,
+          "end": 48.06,
+          "probability": 0.9660003781318665
+        },
+        {
+          "word": " I",
+          "start": 48.06,
+          "end": 48.26,
+          "probability": 0.9792650938034058
+        },
+        {
+          "word": " have",
+          "start": 48.26,
+          "end": 48.48,
+          "probability": 0.9984147548675537
+        },
+        {
+          "word": " integrated",
+          "start": 48.48,
+          "end": 49.16,
+          "probability": 0.9974810481071472
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "seek": 4916,
+      "start": 49.16,
+      "end": 59.76,
+      "text": " into the agent. Wonderful, and one thing it's worth mentioning that Alicia is not a software engineer.",
+      "tokens": [
+        50388, 666, 264, 9461, 13, 22768, 11, 293, 472, 551, 309, 311, 3163,
+        18315, 300, 38153, 307, 406, 257, 4722, 11403, 13, 50888
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.23256194774921124,
+      "compression_ratio": 1.5054347826086956,
+      "no_speech_prob": 0.006308375392109156,
+      "words": [
+        {
+          "word": " into",
+          "start": 49.16,
+          "end": 50.22,
+          "probability": 0.30486220121383667
+        },
+        {
+          "word": " the",
+          "start": 50.22,
+          "end": 51.7,
+          "probability": 0.7441971302032471
+        },
+        {
+          "word": " agent.",
+          "start": 51.7,
+          "end": 53.0,
+          "probability": 0.5164040327072144
+        },
+        {
+          "word": " Wonderful,",
+          "start": 54.76,
+          "end": 55.24,
+          "probability": 0.16604670882225037
+        },
+        {
+          "word": " and",
+          "start": 55.74,
+          "end": 55.98,
+          "probability": 0.8674631714820862
+        },
+        {
+          "word": " one",
+          "start": 55.98,
+          "end": 56.42,
+          "probability": 0.947163999080658
+        },
+        {
+          "word": " thing",
+          "start": 56.42,
+          "end": 56.76,
+          "probability": 0.9948541522026062
+        },
+        {
+          "word": " it's",
+          "start": 56.76,
+          "end": 57.04,
+          "probability": 0.7073782682418823
+        },
+        {
+          "word": " worth",
+          "start": 57.04,
+          "end": 57.22,
+          "probability": 0.9949094653129578
+        },
+        {
+          "word": " mentioning",
+          "start": 57.22,
+          "end": 57.64,
+          "probability": 0.9913060069084167
+        },
+        {
+          "word": " that",
+          "start": 57.64,
+          "end": 57.9,
+          "probability": 0.7119730114936829
+        },
+        {
+          "word": " Alicia",
+          "start": 57.9,
+          "end": 58.26,
+          "probability": 0.7780694365501404
+        },
+        {
+          "word": " is",
+          "start": 58.26,
+          "end": 58.56,
+          "probability": 0.9878051280975342
+        },
+        {
+          "word": " not",
+          "start": 58.56,
+          "end": 58.8,
+          "probability": 0.9984209537506104
+        },
+        {
+          "word": " a",
+          "start": 58.8,
+          "end": 58.96,
+          "probability": 0.9912617206573486
+        },
+        {
+          "word": " software",
+          "start": 58.96,
+          "end": 59.22,
+          "probability": 0.9709803462028503
+        },
+        {
+          "word": " engineer.",
+          "start": 59.22,
+          "end": 59.76,
+          "probability": 0.9980473518371582
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "seek": 4916,
+      "start": 61.98,
+      "end": 69.38,
+      "text": " Yes, that's so cool. I'm an economist by profession. That's wonderful. I have",
+      "tokens": [
+        50996, 1079, 11, 300, 311, 370, 1627, 13, 286, 478, 364, 36696, 538,
+        7032, 13, 663, 311, 3715, 13, 286, 362, 51276
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.23256194774921124,
+      "compression_ratio": 1.5054347826086956,
+      "no_speech_prob": 0.006308375392109156,
+      "words": [
+        {
+          "word": " Yes,",
+          "start": 61.98,
+          "end": 62.6,
+          "probability": 0.9142229557037354
+        },
+        {
+          "word": " that's",
+          "start": 62.8,
+          "end": 63.28,
+          "probability": 0.9789824783802032
+        },
+        {
+          "word": " so",
+          "start": 63.28,
+          "end": 63.4,
+          "probability": 0.9928223490715027
+        },
+        {
+          "word": " cool.",
+          "start": 63.4,
+          "end": 63.5,
+          "probability": 0.9969159364700317
+        },
+        {
+          "word": " I'm",
+          "start": 63.68,
+          "end": 63.72,
+          "probability": 0.6840991675853729
+        },
+        {
+          "word": " an",
+          "start": 63.72,
+          "end": 63.72,
+          "probability": 0.8507968187332153
+        },
+        {
+          "word": " economist",
+          "start": 63.72,
+          "end": 64.22,
+          "probability": 0.9731193780899048
+        },
+        {
+          "word": " by",
+          "start": 64.22,
+          "end": 64.86,
+          "probability": 0.5524037480354309
+        },
+        {
+          "word": " profession.",
+          "start": 64.86,
+          "end": 65.54,
+          "probability": 0.7997592687606812
+        },
+        {
+          "word": " That's",
+          "start": 65.72,
+          "end": 66.32,
+          "probability": 0.9680420756340027
+        },
+        {
+          "word": " wonderful.",
+          "start": 66.32,
+          "end": 66.92,
+          "probability": 0.9806666970252991
+        },
+        {
+          "word": " I",
+          "start": 68.98,
+          "end": 69.1,
+          "probability": 0.9112382531166077
+        },
+        {
+          "word": " have",
+          "start": 69.1,
+          "end": 69.38,
+          "probability": 0.9952109456062317
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "seek": 4916,
+      "start": 69.38,
+      "end": 79.14,
+      "text": " zero software engineering background, but for some reason I have gravitated towards a tech world",
+      "tokens": [
+        51320, 4018, 4722, 7043, 3678, 11, 457, 337, 512, 1778, 286, 362, 7427,
+        18266, 3030, 257, 7553, 1002, 51860
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.23256194774921124,
+      "compression_ratio": 1.5054347826086956,
+      "no_speech_prob": 0.006308375392109156,
+      "words": [
+        {
+          "word": " zero",
+          "start": 69.38,
+          "end": 70.54,
+          "probability": 0.8487266302108765
+        },
+        {
+          "word": " software",
+          "start": 70.54,
+          "end": 71.92,
+          "probability": 0.9689549207687378
+        },
+        {
+          "word": " engineering",
+          "start": 71.92,
+          "end": 72.72,
+          "probability": 0.992659866809845
+        },
+        {
+          "word": " background,",
+          "start": 72.72,
+          "end": 73.46,
+          "probability": 0.9942799806594849
+        },
+        {
+          "word": " but",
+          "start": 73.66,
+          "end": 74.54,
+          "probability": 0.9975802898406982
+        },
+        {
+          "word": " for",
+          "start": 74.54,
+          "end": 75.26,
+          "probability": 0.9705145955085754
+        },
+        {
+          "word": " some",
+          "start": 75.26,
+          "end": 75.82,
+          "probability": 0.9996248483657837
+        },
+        {
+          "word": " reason",
+          "start": 75.82,
+          "end": 76.38,
+          "probability": 0.9992019534111023
+        },
+        {
+          "word": " I",
+          "start": 76.38,
+          "end": 76.62,
+          "probability": 0.7546116709709167
+        },
+        {
+          "word": " have",
+          "start": 76.62,
+          "end": 76.98,
+          "probability": 0.9966539144515991
+        },
+        {
+          "word": " gravitated",
+          "start": 76.98,
+          "end": 77.72,
+          "probability": 0.9984849691390991
+        },
+        {
+          "word": " towards",
+          "start": 77.72,
+          "end": 78.3,
+          "probability": 0.9736058115959167
+        },
+        {
+          "word": " a",
+          "start": 78.3,
+          "end": 78.56,
+          "probability": 0.8747778534889221
+        },
+        {
+          "word": " tech",
+          "start": 78.56,
+          "end": 78.88,
+          "probability": 0.9964922070503235
+        },
+        {
+          "word": " world",
+          "start": 78.88,
+          "end": 79.14,
+          "probability": 0.990685760974884
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "seek": 7916,
+      "start": 79.16,
+      "end": 83.9,
+      "text": " and have become a quasi-software engineer it seems.",
+      "tokens": [
+        50364, 293, 362, 1813, 257, 20954, 12, 13908, 3039, 11403, 309, 2544,
+        13, 50604
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.3203938802083333,
+      "compression_ratio": 0.9107142857142857,
+      "no_speech_prob": 0.001265641418285668,
+      "words": [
+        {
+          "word": " and",
+          "start": 79.16,
+          "end": 79.56,
+          "probability": 0.9151437282562256
+        },
+        {
+          "word": " have",
+          "start": 79.56,
+          "end": 79.86,
+          "probability": 0.9733433723449707
+        },
+        {
+          "word": " become",
+          "start": 79.86,
+          "end": 80.98,
+          "probability": 0.9953816533088684
+        },
+        {
+          "word": " a",
+          "start": 80.98,
+          "end": 81.66,
+          "probability": 0.6983909010887146
+        },
+        {
+          "word": " quasi",
+          "start": 81.66,
+          "end": 82.32,
+          "probability": 0.9632044434547424
+        },
+        {
+          "word": "-software",
+          "start": 82.32,
+          "end": 82.92,
+          "probability": 0.8068392674128214
+        },
+        {
+          "word": " engineer",
+          "start": 82.92,
+          "end": 83.44,
+          "probability": 0.9787577986717224
+        },
+        {
+          "word": " it",
+          "start": 83.44,
+          "end": 83.72,
+          "probability": 0.4152226448059082
+        },
+        {
+          "word": " seems.",
+          "start": 83.72,
+          "end": 83.9,
+          "probability": 0.9930486679077148
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}
