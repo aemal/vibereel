@@ -72,12 +72,14 @@ function processTranscriptionData(data) {
     confidence: Math.abs(segment.avgLogProb)
   }));
 
-  // Generate cleaned transcript (remove filler words, fix spacing)
-  const cleanedText = fullText
-    .replace(/\s+/g, ' ')  // Multiple spaces to single
-    .replace(/\b(um|uh|er|ah)\b/gi, '')  // Remove common filler words
-    .replace(/\s+/g, ' ')  // Clean up spaces after filler removal
-    .trim();
+  // Generate cleaned transcript (remove filler words, fix spacing) - optimized
+  const cleanedText = fullText.length > 100000 ?
+    fullText.replace(/\s+/g, ' ').trim() : // Skip expensive regex for very large texts
+    fullText
+      .replace(/\s+/g, ' ')  // Multiple spaces to single
+      .replace(/\b(um|uh|er|ah)\b/gi, '')  // Remove common filler words
+      .replace(/\s+/g, ' ')  // Clean up spaces after filler removal
+      .trim();
 
   // Split into paragraphs based on longer pauses (gaps > 2 seconds)
   const paragraphs = [];
@@ -116,9 +118,9 @@ function processTranscriptionData(data) {
     exportFormats: {
       srt: generateSRT(segments),
       vtt: generateVTT(segments),
-      ass: generateASS(data.segments || []),
+      ass: generateASS(segments),
       plainText: cleanedText,
-      wordTimings: extractWordTimings(data.segments || [])
+      wordTimings: extractWordTimings(segments)
     }
   };
 }
@@ -143,7 +145,7 @@ function generateVTT(segments) {
   return vttHeader + vttContent;
 }
 
-// Generate ASS subtitle format with karaoke-style word-by-word timing
+// Generate ASS subtitle format with karaoke-style word-by-word timing - memory optimized
 function generateASS(segments) {
   const assHeader = `[Script Info]
 Title: Karaoke Subtitles
@@ -163,44 +165,53 @@ Style: Karaoke,Arial,84,&H0000FFFF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 `;
 
-  const assEvents = [];
-
   // Ensure we have segments to process
   if (!segments || segments.length === 0) {
     return assHeader + 'Dialogue: 0,0:00:00.00,0:00:01.00,Karaoke,,0,0,0,,No data available\n';
   }
 
-  segments.forEach(segment => {
+  const assEvents = [];
+  const MAX_EVENTS = 5000; // Prevent memory overflow
+  let eventCount = 0;
+
+  for (const segment of segments) {
+    if (eventCount >= MAX_EVENTS) break;
+
     if (segment.words && segment.words.length > 0) {
       // Create karaoke-style word-by-word events using word-level timing
-      segment.words.forEach(word => {
-        const startTime = formatASSTime(word.start || segment.start || 0);
-        const endTime = formatASSTime(word.end || segment.end || 0);
+      for (const word of segment.words) {
+        if (eventCount >= MAX_EVENTS) break;
+
+        const startTime = formatASSTime(word.start || segment.startTime || segment.start || 0);
+        const endTime = formatASSTime(word.end || segment.endTime || segment.end || 0);
         const cleanWord = (word.word || '').trim().replace(/\n/g, '\\N');
 
         if (cleanWord) {
           assEvents.push(`Dialogue: 0,${startTime},${endTime},Karaoke,,0,0,0,,${cleanWord}`);
+          eventCount++;
         }
-      });
+      }
     } else if (segment.text) {
       // Fallback: split text by words if no word-level timing available
       const words = segment.text.trim().split(/\s+/);
-      const segmentDuration = (segment.end || 0) - (segment.start || 0);
+      const segmentDuration = (segment.endTime || segment.end || 0) - (segment.startTime || segment.start || 0);
       const timePerWord = segmentDuration > 0 ? segmentDuration / words.length : 1;
 
-      words.forEach((word, index) => {
-        const wordStart = (segment.start || 0) + (index * timePerWord);
-        const wordEnd = (segment.start || 0) + ((index + 1) * timePerWord);
+      for (let index = 0; index < words.length && eventCount < MAX_EVENTS; index++) {
+        const word = words[index];
+        const wordStart = (segment.startTime || segment.start || 0) + (index * timePerWord);
+        const wordEnd = (segment.startTime || segment.start || 0) + ((index + 1) * timePerWord);
         const startTime = formatASSTime(wordStart);
         const endTime = formatASSTime(wordEnd);
         const cleanWord = word.replace(/\n/g, '\\N');
 
         if (cleanWord) {
           assEvents.push(`Dialogue: 0,${startTime},${endTime},Karaoke,,0,0,0,,${cleanWord}`);
+          eventCount++;
         }
-      });
+      }
     }
-  });
+  }
 
   // Ensure we have at least some content
   if (assEvents.length === 0) {
@@ -231,13 +242,17 @@ function formatTime(seconds, isVTT = false) {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}${separator}${ms.toString().padStart(3, '0')}`;
 }
 
-// Extract word-level timings
+// Extract word-level timings with memory optimization
 function extractWordTimings(segments) {
+  const MAX_WORDS = 10000; // Prevent memory overflow
   const wordTimings = [];
+  let wordCount = 0;
 
-  segments.forEach(segment => {
+  for (const segment of segments) {
     if (segment.words) {
-      segment.words.forEach(word => {
+      for (const word of segment.words) {
+        if (wordCount >= MAX_WORDS) break;
+
         wordTimings.push({
           word: word.word?.trim(),
           start: word.start,
@@ -246,71 +261,99 @@ function extractWordTimings(segments) {
           probability: word.probability,
           segmentId: segment.id
         });
-      });
+        wordCount++;
+      }
     }
-  });
+    if (wordCount >= MAX_WORDS) break;
+  }
 
   return wordTimings;
 }
 
-// Process all input items for n8n
-const processedItems = items.map(item => {
-  try {
-    // Handle different input structures
-    let transcriptionData;
+// Process all input items for n8n - memory optimized with batching
+function processItemsBatched(items, batchSize = 10) {
+  const processedItems = [];
+  const startTime = Date.now();
 
-    // Check if data is in binary format first
-    if (item.binary && item.binary.data) {
-      // If it's binary data, try to parse it
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+
+    const batchResults = batch.map(item => {
       try {
-        const binaryData = item.binary.data;
-        transcriptionData = JSON.parse(binaryData);
-      } catch (e) {
-        console.log('Failed to parse binary data:', e);
-        transcriptionData = item.json || item;
-      }
-    } else if (item.json) {
-      // Extract data directly from n8n json structure
-      transcriptionData = item.json.data || item.json;
-    } else {
-      transcriptionData = item;
-    }
+        // Handle different input structures
+        let transcriptionData;
 
-    // Handle array structure from file input (like video.json)
-    if (Array.isArray(transcriptionData) && transcriptionData.length > 0) {
-      // Extract the data object from the first array element
-      transcriptionData = transcriptionData[0].data || transcriptionData[0];
-    }
-
-    // Process the transcription data
-    const processed = processTranscriptionData(transcriptionData);
-
-    return {
-      json: {
-        success: true,
-        processed: processed,
-        metadata: {
-          processedAt: new Date().toISOString(),
-          processingTime: Date.now() - (new Date().getTime()),
-          inputType: 'whisper-transcription'
+        // Check if data is in binary format first
+        if (item.binary && item.binary.data) {
+          // If it's binary data, try to parse it
+          try {
+            const binaryData = item.binary.data;
+            transcriptionData = JSON.parse(binaryData);
+          } catch (e) {
+            console.log('Failed to parse binary data:', e);
+            transcriptionData = item.json || item;
+          }
+        } else if (item.json) {
+          // Extract data directly from n8n json structure
+          transcriptionData = item.json.data || item.json;
+        } else {
+          transcriptionData = item;
         }
-      }
-    };
 
-  } catch (error) {
-    return {
-      json: {
-        success: false,
-        error: error.message,
-        originalData: item,
-        metadata: {
-          processedAt: new Date().toISOString(),
-          inputType: 'error'
+        // Handle array structure from file input (like video.json)
+        if (Array.isArray(transcriptionData) && transcriptionData.length > 0) {
+          // Extract the data object from the first array element
+          transcriptionData = transcriptionData[0].data || transcriptionData[0];
         }
+
+        // Process the transcription data
+        const processed = processTranscriptionData(transcriptionData);
+
+        return {
+          json: {
+            success: true,
+            processed: processed,
+            metadata: {
+              processedAt: new Date().toISOString(),
+              processingTime: Date.now() - startTime,
+              inputType: 'whisper-transcription',
+              batchIndex: Math.floor(i / batchSize)
+            }
+          }
+        };
+
+      } catch (error) {
+        return {
+          json: {
+            success: false,
+            error: error.message,
+            originalData: null, // Don't store original data to save memory
+            metadata: {
+              processedAt: new Date().toISOString(),
+              inputType: 'error',
+              batchIndex: Math.floor(i / batchSize)
+            }
+          }
+        };
       }
-    };
+    });
+
+    processedItems.push(...batchResults);
+
+    // Force garbage collection hint between batches for large datasets
+    if (items.length > 100 && i % 50 === 0) {
+      // Allow event loop to process other tasks
+      if (typeof setImmediate !== 'undefined') {
+        setImmediate(() => {});
+      }
+    }
   }
-});
+
+  return processedItems;
+}
+
+// Process items with memory optimization
+const processedItems = processItemsBatched(items);
 
 // Return processed items for n8n
 return processedItems;

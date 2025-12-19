@@ -8,14 +8,10 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         :root {
             --bg-dark: #0a0e14;
             --bg-card: #151921;
@@ -24,86 +20,24 @@
             --accent-green: #00ff9f;
             --accent-yellow: #ffd500;
             --accent-red: #ff3366;
-            --accent-purple: #a855f7;
             --text-primary: #e6e9ef;
             --text-secondary: #8b92a3;
             --border: #2a2f3a;
         }
-
+        
         body {
             font-family: 'JetBrains Mono', monospace;
             background: var(--bg-dark);
             color: var(--text-primary);
             min-height: 100vh;
-            overflow-x: hidden;
         }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(0, 255, 159, 0.03) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 50px;
-            position: relative;
-        }
-
-        .logo {
-            font-size: 14px;
-            letter-spacing: 3px;
-            color: var(--accent-cyan);
-            margin-bottom: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            border-radius: 20px;
-            margin-left: 10px;
-            letter-spacing: 1px;
-        }
-
-        h1 {
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -1px;
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 14px;
-            font-weight: 400;
-        }
-
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 50px; }
+        .logo { font-size: 14px; letter-spacing: 3px; color: var(--accent-cyan); margin-bottom: 10px; font-weight: 700; text-transform: uppercase; }
+        h1 { font-size: 48px; font-weight: 700; margin-bottom: 15px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: var(--text-secondary); font-size: 14px; }
+        
         .upload-section {
             background: var(--bg-card);
             border: 2px dashed var(--border);
@@ -112,315 +46,69 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
+        }
+        .upload-section:hover { border-color: var(--accent-cyan); }
+        .upload-icon { font-size: 64px; margin-bottom: 20px; }
+        .upload-text { font-size: 16px; margin-bottom: 10px; font-weight: 600; }
+        
+        .controls { display: flex; gap: 15px; margin: 30px 0; align-items: center; flex-wrap: wrap; }
+        .control-group { flex: 1; min-width: 200px; }
+        .control-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; }
+        .time-input { width: 100%; padding: 12px 15px; background: var(--bg-input); border: 2px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+        
+        .detect-btn { padding: 14px 40px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green)); border: none; border-radius: 8px; color: var(--bg-dark); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        .detect-btn:disabled { opacity: 0.5; }
+        
+        .canvas-wrapper {
             position: relative;
+            margin: 20px 0;
+            border-radius: 8px;
             overflow: hidden;
-        }
-
-        .upload-section:hover {
-            border-color: var(--accent-cyan);
-            background: rgba(0, 217, 255, 0.03);
-        }
-
-        .upload-section.dragging {
-            border-color: var(--accent-green);
-            background: rgba(0, 255, 159, 0.05);
-        }
-
-        .upload-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .upload-text {
-            font-size: 16px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .upload-subtext {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin: 30px 0;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .control-group {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .control-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .time-input {
-            width: 100%;
-            padding: 12px 15px;
-            background: var(--bg-input);
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .time-input:focus {
-            outline: none;
-            border-color: var(--accent-cyan);
-        }
-
-        .detect-btn {
-            padding: 14px 40px;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
-            border: none;
-            border-radius: 8px;
-            color: var(--bg-dark);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .detect-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
-        }
-
-        .detect-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .reset-btn {
-            padding: 14px 30px;
-            background: var(--bg-input);
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .reset-btn:hover {
-            border-color: var(--accent-cyan);
-            background: rgba(0, 217, 255, 0.1);
-        }
-
-        .video-preview {
-            position: relative;
             background: var(--bg-card);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 30px 0;
         }
-
-        .video-container {
-            position: relative;
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
-        .video-canvas {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
+        
+        .video-canvas { 
+            width: 100%; 
             display: block;
+            cursor: crosshair;
         }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .participant-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .participant-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
-            border-radius: 12px 12px 0 0;
-        }
-
-        .participant-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .participant-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .participant-id {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--accent-cyan);
-        }
-
-        .participant-color {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            border: 2px solid var(--border);
-        }
-
-        .coord-group {
-            margin: 15px 0;
-        }
-
-        .coord-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .coord-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--accent-green);
-            font-family: 'Space Mono', monospace;
-        }
-
-        .ffmpeg-command {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-            position: relative;
-        }
-
-        .ffmpeg-label {
-            font-size: 10px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .ffmpeg-code {
-            font-size: 12px;
-            color: var(--accent-yellow);
-            word-break: break-all;
-            line-height: 1.6;
-        }
-
-        .copy-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 6px 12px;
-            background: var(--accent-cyan);
-            color: var(--bg-dark);
-            border: none;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .copy-btn:hover {
-            background: var(--accent-green);
-        }
-
-        .stats-bar {
-            display: flex;
-            gap: 30px;
-            padding: 20px;
-            background: var(--bg-card);
-            border-radius: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stat {
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--accent-cyan);
-        }
-
-        .loading {
+        
+        .help-text {
             text-align: center;
-            padding: 40px;
-            color: var(--text-secondary);
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            margin: 0 auto 20px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent-cyan);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-status {
+            color: var(--accent-green);
             font-size: 13px;
-            color: var(--accent-cyan);
-            margin-top: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 255, 159, 0.1);
+            border-radius: 8px;
         }
-
-        input[type="file"] {
-            display: none;
+        
+        .sync-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid var(--accent-yellow);
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--accent-yellow);
+            margin-left: 10px;
         }
-
+        
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
+        .participant-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .participant-id { font-size: 18px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 15px; }
+        .coord-value { font-size: 14px; color: var(--accent-green); margin: 8px 0; }
+        
+        .ffmpeg-command { background: var(--bg-input); border-radius: 8px; padding: 15px; margin-top: 15px; position: relative; }
+        .ffmpeg-code { font-size: 11px; color: var(--accent-yellow); word-break: break-all; padding-right: 60px; line-height: 1.6; }
+        .copy-btn { position: absolute; top: 15px; right: 15px; padding: 6px 12px; background: var(--accent-cyan); color: var(--bg-dark); border: none; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        
+        .loading { text-align: center; padding: 40px; color: var(--text-secondary); }
+        .spinner { width: 40px; height: 40px; margin: 0 auto 20px; border: 3px solid var(--border); border-top-color: var(--accent-cyan); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        input[type="file"] { display: none; }
+        
         .info-box {
             background: rgba(0, 217, 255, 0.1);
             border: 1px solid rgba(0, 217, 255, 0.3);
@@ -428,11 +116,6 @@
             padding: 15px;
             margin: 20px 0;
             font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .info-box strong {
-            color: var(--accent-cyan);
         }
     </style>
 </head>
@@ -441,19 +124,17 @@
 
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
+        const COLORS = ['#00d9ff', '#00ff9f'];
 
-        const COLORS = ['#00d9ff', '#00ff9f', '#ffd500', '#ff3366', '#a855f7', '#06b6d4'];
-
-        function FaceDetectionApp() {
+        function App() {
             const [modelsLoaded, setModelsLoaded] = useState(false);
             const [video, setVideo] = useState(null);
             const [videoUrl, setVideoUrl] = useState(null);
-            const [results, setResults] = useState(null);
+            const [boxes, setBoxes] = useState([]);
             const [processing, setProcessing] = useState(false);
-            const [dragging, setDragging] = useState(false);
-            const [videoMetadata, setVideoMetadata] = useState(null);
             const [seekTime, setSeekTime] = useState(10);
-            const [loadingStatus, setLoadingStatus] = useState('');
+            const [dragging, setDragging] = useState(null);
+            const [videoFrame, setVideoFrame] = useState(null);
             
             const fileInputRef = useRef(null);
             const videoRef = useRef(null);
@@ -463,371 +144,429 @@
                 loadModels();
             }, []);
 
+            useEffect(() => {
+                if (boxes.length > 0 && videoFrame) {
+                    redrawCanvas();
+                }
+            }, [boxes, videoFrame]);
+
             const loadModels = async () => {
                 try {
-                    setLoadingStatus('Loading face detection models...');
                     const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-                    
                     await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-                    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-                    
                     setModelsLoaded(true);
-                    setLoadingStatus('');
                 } catch (error) {
-                    console.error('Error loading models:', error);
-                    setLoadingStatus('Error loading models. Please refresh.');
+                    console.error('Model load error:', error);
                 }
             };
 
             const handleFileSelect = (file) => {
                 if (file && file.type.startsWith('video/')) {
                     setVideo(file);
-                    const url = URL.createObjectURL(file);
-                    setVideoUrl(url);
-                    setResults(null);
+                    setVideoUrl(URL.createObjectURL(file));
+                    setBoxes([]);
                 }
-            };
-
-            const handleDrop = (e) => {
-                e.preventDefault();
-                setDragging(false);
-                const file = e.dataTransfer.files[0];
-                handleFileSelect(file);
             };
 
             const detectFaces = async () => {
                 if (!videoRef.current || !canvasRef.current || !modelsLoaded) return;
-
                 setProcessing(true);
-                setResults(null);
-                setLoadingStatus('Seeking to specified time...');
 
                 try {
                     const videoEl = videoRef.current;
                     const canvas = canvasRef.current;
                     const ctx = canvas.getContext('2d');
 
-                    // Wait for video metadata
                     await new Promise((resolve) => {
-                        if (videoEl.readyState >= 1) {
-                            resolve();
-                        } else {
-                            videoEl.onloadedmetadata = resolve;
-                        }
+                        if (videoEl.readyState >= 1) resolve();
+                        else videoEl.onloadedmetadata = resolve;
                     });
 
                     const width = videoEl.videoWidth;
                     const height = videoEl.videoHeight;
-
-                    setVideoMetadata({
-                        width,
-                        height,
-                        duration: videoEl.duration,
-                        aspectRatio: (width / height).toFixed(2)
-                    });
-
                     canvas.width = width;
                     canvas.height = height;
 
-                    // Seek to specified time
                     videoEl.currentTime = Math.min(seekTime, videoEl.duration - 1);
-
-                    await new Promise((resolve) => {
-                        videoEl.onseeked = resolve;
-                    });
-
-                    // Small delay for frame to be ready
+                    await new Promise((resolve) => { videoEl.onseeked = resolve; });
                     await new Promise(resolve => setTimeout(resolve, 200));
 
-                    // Draw frame
                     ctx.drawImage(videoEl, 0, 0, width, height);
+                    
+                    // Store frame for redrawing
+                    setVideoFrame(ctx.getImageData(0, 0, width, height));
 
-                    setLoadingStatus('Detecting faces...');
-
-                    // Detect faces using tiny model (faster)
                     const detections = await faceapi.detectAllFaces(
                         canvas,
-                        new faceapi.TinyFaceDetectorOptions({
-                            inputSize: 416,
-                            scoreThreshold: 0.3
-                        })
+                        new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 })
                     );
 
                     if (detections.length === 0) {
-                        setLoadingStatus('No faces detected. Try a different timestamp.');
+                        alert('No faces detected. Try a different timestamp (10-15s usually works).');
                         setProcessing(false);
                         return;
                     }
 
-                    setLoadingStatus(`Found ${detections.length} faces! Calculating crop regions...`);
-
-                    // Process each detected face
-                    const participants = detections.map((detection, index) => {
-                        const box = detection.box;
-
-                        // Calculate face center point
-                        const faceCenterX = box.x + box.width / 2;
-                        const faceCenterY = box.y + box.height / 2;
-
-                        // Create tight square around face - about 3x the face size for good framing
-                        const faceSize = Math.max(box.width, box.height);
-                        const targetSquareSize = faceSize * 3; // 3x face size for good head/shoulder framing
-
-                        // Create square centered on face
-                        let x = Math.max(0, Math.floor(faceCenterX - targetSquareSize / 2));
-                        let y = Math.max(0, Math.floor(faceCenterY - targetSquareSize / 2));
-                        let w = Math.min(width - x, Math.floor(targetSquareSize));
-                        let h = Math.min(height - y, Math.floor(targetSquareSize));
-
-                        // Ensure perfect square
-                        const squareSize = Math.min(w, h);
-
-                        // Re-center the square if needed due to boundary constraints
-                        x = Math.max(0, Math.min(width - squareSize, Math.floor(faceCenterX - squareSize / 2)));
-                        y = Math.max(0, Math.min(height - squareSize, Math.floor(faceCenterY - squareSize / 2)));
-                        w = squareSize;
-                        h = squareSize;
-
-                        const color = COLORS[index % COLORS.length];
-
-                        // Draw rectangle on canvas
-                        ctx.strokeStyle = color;
-                        ctx.lineWidth = 4;
-                        ctx.strokeRect(x, y, w, h);
-
-                        // Draw label
-                        ctx.fillStyle = color;
-                        ctx.font = 'bold 24px JetBrains Mono';
-                        ctx.fillText(`P${index + 1}`, x + 10, y + 35);
-
-                        // Also draw the face detection box (smaller, for reference)
-                        ctx.strokeStyle = color;
-                        ctx.lineWidth = 2;
-                        ctx.setLineDash([5, 5]);
-                        ctx.strokeRect(box.x, box.y, box.width, box.height);
-                        ctx.setLineDash([]);
-
-                        const cropFilter = `crop=${w}:${h}:${x}:${y}`;
-
+                    // Sort by position (top-left to bottom-right)
+                    const faces = detections.map(d => {
+                        const box = d.box;
                         return {
-                            id: index + 1,
-                            color,
-                            faceBox: { x: Math.floor(box.x), y: Math.floor(box.y), width: Math.floor(box.width), height: Math.floor(box.height) },
-                            coordinates: { x, y, width: w, height: h },
-                            cropFilter,
-                            ffmpegCommand: `ffmpeg -i input.mp4 -vf "${cropFilter},scale=1080:960:flags=lanczos" -c:v libx264 -preset fast -crf 18 -c:a copy participant_${index + 1}_square.mp4`
+                            centerX: box.x + box.width / 2,
+                            centerY: box.y + box.height / 2,
+                            box: box
                         };
                     });
 
-                    // Add combined reel command if we have 2 participants
-                    const finalResults = participants.map(p => p);
-                    if (participants.length >= 2) {
-                        finalResults.push({
-                            id: 'combined',
-                            color: '#ffffff',
-                            faceBox: null,
-                            coordinates: null,
-                            cropFilter: 'Combined Reel',
-                            ffmpegCommand: `ffmpeg -i participant_1_square.mp4 -i participant_2_square.mp4 -filter_complex "[0:v][1:v]vstack=inputs=2" -c:v libx264 -preset fast -crf 23 -c:a copy instagram_reel_1080x1920.mp4`
-                        });
+                    faces.sort((a, b) => {
+                        if (Math.abs(a.centerY - b.centerY) < height * 0.3) {
+                            return a.centerX - b.centerX;
+                        }
+                        return a.centerY - b.centerY;
+                    });
+
+                    // Take only first 2 faces
+                    const topTwoFaces = faces.slice(0, 2);
+
+                    // Determine grid (assume 2x1 or 1x2 layout)
+                    let gridCols, gridRows;
+                    if (topTwoFaces.length === 2) {
+                        const yDiff = Math.abs(topTwoFaces[0].centerY - topTwoFaces[1].centerY);
+                        if (yDiff < height * 0.3) {
+                            gridCols = 2; gridRows = 1; // Side by side
+                        } else {
+                            gridCols = 1; gridRows = 2; // Top and bottom
+                        }
+                    } else {
+                        gridCols = 1; gridRows = 1;
                     }
 
-                    setResults(finalResults);
-                    setLoadingStatus('');
+                    const cellWidth = width / gridCols;
+                    const cellHeight = height / gridRows;
+
+                    const initialBoxes = topTwoFaces.map((face, index) => {
+                        const col = Math.floor(face.centerX / cellWidth);
+                        const row = Math.floor(face.centerY / cellHeight);
+
+                        let cellX = col * cellWidth;
+                        let cellY = row * cellHeight;
+                        let cellW = cellWidth;
+                        let cellH = cellHeight;
+
+                        const padding = 20;
+                        cellX += padding;
+                        cellY += padding;
+                        cellW -= padding * 2;
+                        cellH -= padding * 2;
+
+                        // Make 9:8 aspect ratio (1080×960 - full width, half height)
+                        const aspectRatio = 1080 / 960;
+                        let x = cellX;
+                        let y = cellY;
+                        let w, h;
+
+                        // Calculate optimal size to fit in cell while maintaining 9:8
+                        const maxWidthFromHeight = cellH * aspectRatio;
+                        const maxHeightFromWidth = cellW / aspectRatio;
+
+                        if (maxWidthFromHeight <= cellW) {
+                            // Height constrains us
+                            h = cellH;
+                            w = h * aspectRatio;
+                            x = cellX + (cellW - w) / 2; // Center horizontally
+                        } else {
+                            // Width constrains us
+                            w = cellW;
+                            h = w / aspectRatio;
+                            y = cellY + (cellH - h) / 2; // Center vertically
+                        }
+
+                        return {
+                            id: index + 1,
+                            x: Math.floor(x),
+                            y: Math.floor(y),
+                            width: Math.floor(w),
+                            height: Math.floor(h),
+                            color: COLORS[index % COLORS.length]
+                        };
+                    });
+
+                    setBoxes(initialBoxes);
+                    setProcessing(false);
+
                 } catch (error) {
                     console.error('Detection error:', error);
-                    setLoadingStatus(`Error: ${error.message}`);
-                } finally {
+                    alert('Detection failed: ' + error.message);
                     setProcessing(false);
                 }
             };
 
-            const copyToClipboard = (text) => {
-                navigator.clipboard.writeText(text);
+            const redrawCanvas = () => {
+                const canvas = canvasRef.current;
+                if (!canvas || !videoFrame) return;
+                
+                const ctx = canvas.getContext('2d');
+                
+                // Redraw original frame
+                ctx.putImageData(videoFrame, 0, 0);
+                
+                // Draw boxes
+                boxes.forEach(box => {
+                    // Box
+                    ctx.strokeStyle = box.color;
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(box.x, box.y, box.width, box.height);
+                    
+                    // Label
+                    ctx.fillStyle = box.color;
+                    ctx.font = 'bold 24px JetBrains Mono';
+                    ctx.fillText(`Cut ${box.id}`, box.x + 10, box.y + 35);
+                    
+                    // Size indicator
+                    ctx.font = '16px JetBrains Mono';
+                    ctx.fillText(`${box.width}×${box.height}`, box.x + 10, box.y + box.height - 10);
+                    
+                    // Resize handles (corners)
+                    const handleSize = 12;
+                    ctx.fillStyle = box.color;
+                    
+                    // Top-left
+                    ctx.fillRect(box.x - handleSize/2, box.y - handleSize/2, handleSize, handleSize);
+                    // Top-right
+                    ctx.fillRect(box.x + box.width - handleSize/2, box.y - handleSize/2, handleSize, handleSize);
+                    // Bottom-left
+                    ctx.fillRect(box.x - handleSize/2, box.y + box.height - handleSize/2, handleSize, handleSize);
+                    // Bottom-right
+                    ctx.fillRect(box.x + box.width - handleSize/2, box.y + box.height - handleSize/2, handleSize, handleSize);
+                });
             };
 
-            const reset = () => {
-                setVideo(null);
-                setVideoUrl(null);
-                setResults(null);
-                setVideoMetadata(null);
+            const syncBoxSize = (changedIndex, newWidth) => {
+                const newBoxes = [...boxes];
+                const aspectRatio = 1080 / 960; // 1080:960 ratio (9:8) for reel halves
+                const newHeight = newWidth / aspectRatio; // Calculate height to maintain 9:8
+
+                // Update all boxes to same 1080×960 size
+                newBoxes.forEach((box, index) => {
+                    box.width = newWidth;
+                    box.height = newHeight;
+                });
+
+                return newBoxes;
+            };
+
+            const handleCanvasMouseDown = (e) => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mouseX = (e.clientX - rect.left) * scaleX;
+                const mouseY = (e.clientY - rect.top) * scaleY;
+                
+                // Check if clicking on a box or handle
+                for (let i = boxes.length - 1; i >= 0; i--) {
+                    const box = boxes[i];
+                    const handleSize = 12;
+                    
+                    // Check resize handles first
+                    if (Math.abs(mouseX - box.x) < handleSize && Math.abs(mouseY - box.y) < handleSize) {
+                        setDragging({ index: i, type: 'resize-tl' });
+                        return;
+                    }
+                    if (Math.abs(mouseX - (box.x + box.width)) < handleSize && Math.abs(mouseY - box.y) < handleSize) {
+                        setDragging({ index: i, type: 'resize-tr' });
+                        return;
+                    }
+                    if (Math.abs(mouseX - box.x) < handleSize && Math.abs(mouseY - (box.y + box.height)) < handleSize) {
+                        setDragging({ index: i, type: 'resize-bl' });
+                        return;
+                    }
+                    if (Math.abs(mouseX - (box.x + box.width)) < handleSize && Math.abs(mouseY - (box.y + box.height)) < handleSize) {
+                        setDragging({ index: i, type: 'resize-br' });
+                        return;
+                    }
+                    
+                    // Check if inside box for dragging
+                    if (mouseX >= box.x && mouseX <= box.x + box.width &&
+                        mouseY >= box.y && mouseY <= box.y + box.height) {
+                        setDragging({ 
+                            index: i, 
+                            type: 'move',
+                            startX: mouseX - box.x,
+                            startY: mouseY - box.y
+                        });
+                        return;
+                    }
+                }
+            };
+
+            const handleCanvasMouseMove = (e) => {
+                if (!dragging) return;
+                
+                const canvas = canvasRef.current;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mouseX = (e.clientX - rect.left) * scaleX;
+                const mouseY = (e.clientY - rect.top) * scaleY;
+                
+                let newBoxes = [...boxes];
+                const box = newBoxes[dragging.index];
+                
+                if (dragging.type === 'move') {
+                    box.x = Math.max(0, Math.min(canvas.width - box.width, mouseX - dragging.startX));
+                    box.y = Math.max(0, Math.min(canvas.height - box.height, mouseY - dragging.startY));
+                } else if (dragging.type.startsWith('resize-')) {
+                    const minWidth = 50;
+                    const aspectRatio = 1080 / 960; // 1080:960 ratio (9:8)
+                    let newWidth = box.width;
+
+                    if (dragging.type === 'resize-tl') {
+                        newWidth = box.x + box.width - mouseX;
+                        if (newWidth > minWidth) {
+                            const newHeight = newWidth / aspectRatio;
+                            box.x = box.x + box.width - newWidth;
+                            box.y = box.y + box.height - newHeight;
+                            newBoxes = syncBoxSize(dragging.index, newWidth);
+                        }
+                    } else if (dragging.type === 'resize-tr') {
+                        newWidth = mouseX - box.x;
+                        if (newWidth > minWidth) {
+                            const newHeight = newWidth / aspectRatio;
+                            box.y = box.y + box.height - newHeight;
+                            newBoxes = syncBoxSize(dragging.index, newWidth);
+                        }
+                    } else if (dragging.type === 'resize-bl') {
+                        newWidth = box.x + box.width - mouseX;
+                        if (newWidth > minWidth) {
+                            const newHeight = newWidth / aspectRatio;
+                            box.x = box.x + box.width - newWidth;
+                            newBoxes = syncBoxSize(dragging.index, newWidth);
+                        }
+                    } else if (dragging.type === 'resize-br') {
+                        newWidth = mouseX - box.x;
+                        if (newWidth > minWidth) {
+                            newBoxes = syncBoxSize(dragging.index, newWidth);
+                        }
+                    }
+                }
+                
+                setBoxes(newBoxes);
+            };
+
+            const handleCanvasMouseUp = () => {
+                setDragging(null);
             };
 
             return (
                 <div className="container">
                     <div className="header">
-                        <div className="logo">⚡ Vibe Reel</div>
-                        <h1>
-                            Face Detection Cropper
-                            <span className="badge">NO API</span>
-                        </h1>
-                        <div className="subtitle">Creates tight face crops, scales to squares for Instagram reels (1080×1920) - 100% client-side</div>
+                        <div className="logo">⚡ VIBE REEL</div>
+                        <h1>Dual Box Frame Detector</h1>
+                        <div className="subtitle">AI face detection → 1080×960 boxes → Stack for 1080×1920 reels</div>
                     </div>
 
-                    {!modelsLoaded && (
-                        <div className="info-box">
-                            <strong>⏳ Loading AI models...</strong><br/>
-                            {loadingStatus}
-                        </div>
-                    )}
+                    {!modelsLoaded && <div className="loading"><div className="spinner"></div>Loading AI models...</div>}
 
                     {modelsLoaded && !video && (
-                        <div 
-                            className={`upload-section ${dragging ? 'dragging' : ''}`}
-                            onClick={() => fileInputRef.current.click()}
-                            onDrop={handleDrop}
-                            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-                            onDragLeave={() => setDragging(false)}
-                        >
-                            <div className="upload-icon">🎥</div>
-                            <div className="upload-text">Drop your Google Meet/Zoom recording</div>
-                            <div className="upload-subtext">Face detection will find exact participant positions</div>
-                            <input 
-                                ref={fileInputRef}
-                                type="file" 
-                                accept="video/*"
-                                onChange={(e) => handleFileSelect(e.target.files[0])}
-                            />
-                        </div>
+                        <>
+                            <div className="info-box">
+                                <strong>🎯 How it works:</strong><br/>
+                                1. Upload video → AI detects first 2 faces<br/>
+                                2. Drag boxes to reposition | Drag corners to resize<br/>
+                                3. <strong>Boxes maintain 9:8 ratio & auto-sync size</strong> <span className="sync-badge">1080×960 EACH</span><br/>
+                                4. Copy FFmpeg commands → cut1.mp4 (1080×960), cut2.mp4 (1080×960), merged.mp4 (1080×1920)
+                            </div>
+                            
+                            <div className="upload-section" onClick={() => fileInputRef.current.click()}>
+                                <div className="upload-icon">🎥</div>
+                                <div className="upload-text">Upload Google Meet Recording</div>
+                                <input ref={fileInputRef} type="file" accept="video/*" onChange={(e) => handleFileSelect(e.target.files[0])} />
+                            </div>
+                        </>
                     )}
 
                     {video && (
                         <>
                             <div className="controls">
                                 <div className="control-group">
-                                    <div className="control-label">Seek to timestamp (seconds)</div>
-                                    <input
-                                        type="number"
-                                        className="time-input"
-                                        value={seekTime}
-                                        onChange={(e) => setSeekTime(Number(e.target.value))}
-                                        min="0"
-                                        max={videoMetadata?.duration || 3600}
+                                    <div className="control-label">Timestamp (seconds)</div>
+                                    <input 
+                                        type="number" 
+                                        className="time-input" 
+                                        value={seekTime} 
+                                        onChange={(e) => setSeekTime(Number(e.target.value))} 
+                                        min="0" 
                                     />
                                 </div>
-                                <button 
-                                    className="detect-btn"
-                                    onClick={detectFaces}
-                                    disabled={processing || !modelsLoaded}
-                                >
-                                    {processing ? '🔍 Detecting...' : '🎯 Detect Faces'}
-                                </button>
-                                <button className="reset-btn" onClick={reset}>
-                                    ↻ New Video
+                                <button className="detect-btn" onClick={detectFaces} disabled={processing}>
+                                    {processing ? 'Detecting Faces...' : '🔍 Detect Faces'}
                                 </button>
                             </div>
 
-                            {videoMetadata && (
-                                <div className="stats-bar">
-                                    <div className="stat">
-                                        <div className="stat-label">Resolution</div>
-                                        <div className="stat-value">{videoMetadata.width}×{videoMetadata.height}</div>
-                                    </div>
-                                    <div className="stat">
-                                        <div className="stat-label">Duration</div>
-                                        <div className="stat-value">{Math.floor(videoMetadata.duration)}s</div>
-                                    </div>
-                                    <div className="stat">
-                                        <div className="stat-label">Timestamp</div>
-                                        <div className="stat-value">{seekTime}s</div>
-                                    </div>
-                                    <div className="stat">
-                                        <div className="stat-label">Faces Found</div>
-                                        <div className="stat-value">{results ? results.length : '-'}</div>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="video-preview">
-                                <div className="video-container">
-                                    <video ref={videoRef} src={videoUrl} preload="metadata" style={{display: 'none'}} />
-                                    <canvas ref={canvasRef} className="video-canvas" />
-                                </div>
+                            <video ref={videoRef} src={videoUrl} style={{display: 'none'}} />
+                            
+                            <div className="canvas-wrapper">
+                                <canvas 
+                                    ref={canvasRef} 
+                                    className="video-canvas"
+                                    onMouseDown={handleCanvasMouseDown}
+                                    onMouseMove={handleCanvasMouseMove}
+                                    onMouseUp={handleCanvasMouseUp}
+                                    onMouseLeave={handleCanvasMouseUp}
+                                />
                             </div>
-
-                            {processing && (
-                                <div className="loading">
-                                    <div className="spinner"></div>
-                                    <div>Processing video frame...</div>
-                                    <div className="loading-status">{loadingStatus}</div>
+                            
+                            {boxes.length > 0 && (
+                                <div className="help-text">
+                                    ✨ Drag to move | Drag corners to resize <span className="sync-badge">1080×960</span> <span className="sync-badge">Both boxes resize together</span>
                                 </div>
                             )}
 
-                            {results && (
+                            {boxes.length > 0 && (
                                 <div className="results-grid">
-                                    {results.map(participant => (
-                                        <div key={participant.id} className="participant-card">
-                                            <div className="participant-header">
-                                                <div className="participant-id">
-                                                    {participant.id === 'combined' ? 'Combined Instagram Reel' : `Participant ${participant.id}`}
-                                                </div>
-                                                <div
-                                                    className="participant-color"
-                                                    style={{backgroundColor: participant.color}}
-                                                />
+                                    {boxes.map(box => (
+                                        <div key={box.id} className="participant-card">
+                                            <div className="participant-id">
+                                                Cut {box.id}
+                                                {boxes.length > 1 && <span className="sync-badge">SYNCED SIZE</span>}
                                             </div>
-
-                                            {participant.faceBox && (
-                                                <div className="coord-group">
-                                                    <div className="coord-label">Face Detected At</div>
-                                                    <div className="coord-value" style={{fontSize: '14px'}}>
-                                                        ({participant.faceBox.x}, {participant.faceBox.y}) {participant.faceBox.width}×{participant.faceBox.height}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {participant.coordinates && (
-                                                <>
-                                                    <div className="coord-group">
-                                                        <div className="coord-label">Square Crop Position (x, y)</div>
-                                                        <div className="coord-value">
-                                                            {participant.coordinates.x}, {participant.coordinates.y}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="coord-group">
-                                                        <div className="coord-label">Square Size (w × h)</div>
-                                                        <div className="coord-value">
-                                                            {participant.coordinates.width} × {participant.coordinates.height}
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            )}
-
-                                            <div className="coord-group">
-                                                <div className="coord-label">
-                                                    {participant.id === 'combined' ? 'Process Type' : 'FFmpeg Crop Filter'}
-                                                </div>
-                                                <div className="coord-value" style={{fontSize: '14px'}}>
-                                                    {participant.cropFilter}
-                                                </div>
-                                            </div>
-
-                                            {participant.coordinates && (
-                                                <div className="coord-group">
-                                                    <div className="coord-label">Scaling Factor</div>
-                                                    <div className="coord-value" style={{fontSize: '14px'}}>
-                                                        {Math.round((1080 / participant.coordinates.width) * 100) / 100}x zoom to reach 1080×960
-                                                    </div>
-                                                </div>
-                                            )}
-
+                                            <div className="coord-value">Position: ({box.x}, {box.y})</div>
+                                            <div className="coord-value">Size: {box.width} × {box.height}</div>
+                                            <div className="coord-value">crop={box.width}:{box.height}:{box.x}:{box.y}</div>
                                             <div className="ffmpeg-command">
-                                                <div className="ffmpeg-label">
-                                                    {participant.id === 'combined' ? 'Stack Command (Run After Individual Crops)' : 'Individual Square Crop Command'}
-                                                </div>
-                                                <div className="ffmpeg-code">
-                                                    {participant.ffmpegCommand}
-                                                </div>
-                                                <button
-                                                    className="copy-btn"
-                                                    onClick={() => copyToClipboard(participant.ffmpegCommand)}
+                                                <div className="ffmpeg-code">zsh -lc 'source ~/.zshrc; rm -rf cut{box.id}.mp4; ffmpeg -i video.mp4 -vf "crop={box.width}:{box.height}:{box.x}:{box.y}" -c:v libx264 -crf 18 -preset medium -c:a copy cut{box.id}.mp4'</div>
+                                                <button 
+                                                    className="copy-btn" 
+                                                    onClick={() => navigator.clipboard.writeText(
+                                                        `zsh -lc 'source ~/.zshrc; rm -rf cut${box.id}.mp4; ffmpeg -i video.mp4 -vf "crop=${box.width}:${box.height}:${box.x}:${box.y}" -c:v libx264 -crf 18 -preset medium -c:a copy cut${box.id}.mp4'`
+                                                    )}
                                                 >
                                                     Copy
                                                 </button>
                                             </div>
                                         </div>
                                     ))}
+                                    
+                                    {boxes.length === 2 && (
+                                        <div className="participant-card" style={{gridColumn: '1 / -1', background: 'var(--bg-input)', borderColor: 'var(--accent-green)'}}>
+                                            <div className="participant-id" style={{color: 'var(--accent-green)'}}>
+                                                📚 Merge Both Cuts
+                                            </div>
+                                            <div className="ffmpeg-command">
+                                                <div className="ffmpeg-code">zsh -lc 'source ~/.zshrc; rm -rf merged.mp4; ffmpeg -i cut1.mp4 -i cut2.mp4 -filter_complex "[0:v][1:v]vstack=inputs=2[v]" -map "[v]" -map "0:a?" merged.mp4'</div>
+                                                <button 
+                                                    className="copy-btn" 
+                                                    onClick={() => navigator.clipboard.writeText(
+                                                        `zsh -lc 'source ~/.zshrc; rm -rf merged.mp4; ffmpeg -i cut1.mp4 -i cut2.mp4 -filter_complex "[0:v][1:v]vstack=inputs=2[v]" -map "[v]" -map "0:a?" merged.mp4'`
+                                                    )}
+                                                >
+                                                    Copy
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </>
@@ -836,7 +575,7 @@
             );
         }
 
-        ReactDOM.render(<FaceDetectionApp />, document.getElementById('root'));
+        ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 </body>
 </html>
