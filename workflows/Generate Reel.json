@@ -1,0 +1,467 @@
+{
+  "name": "Generate Reel",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        -192
+      ],
+      "id": "1ad51777-23c9-4d97-a333-171626e1b7f1",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "zsh -lc 'source ~/.zshrc; whisper video.mp4 --model medium --output_format json --word_timestamps True --verbose False'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -192
+      ],
+      "id": "06f03584-337b-49ee-aed6-6fc2a770af5b",
+      "name": "Generate Transcript",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/video.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -192
+      ],
+      "id": "f79ee27d-5952-439f-a521-225e24d5daa1",
+      "name": "Get Transcript",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "zsh -lc 'source ~/.zshrc; compress video.mov'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -192
+      ],
+      "id": "c4f2e275-474f-445f-b4ec-26debddaebfb",
+      "name": "Compress Video",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/home/node/.n8n-files/transcript.ass",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -192
+      ],
+      "id": "59e3eeba-97e1-4428-b150-55daf18a8bfb",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "processed.exportFormats.ass",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1296,
+        -192
+      ],
+      "id": "7815fd62-6e18-4084-bb5c-0eb7005d621b",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf reel.mp4; ffmpeg -i merged.mp4 \\\n-vf \"subtitles=transcript.ass\" \\\n-c:a copy \\\nreel.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2416,
+        -192
+      ],
+      "id": "3b07a13b-9566-40e7-b154-67ee509dd33d",
+      "name": "Burn Subtitles",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const json = {\n  \"text\": \" I'm with Alicia, and she has built an innate workflow that helps a son to fish scholarships. Alicia, what did you build? Tell us more about that. Okay, so the scholarship workflow, research workflow that I built using innate and actually aggregates different scholarships that's tailored specifically to my son, and so it is using his personal information with regards to all his demographic information, his interest, his bracket sheet, everything to actually scrape different websites through Tabli and the SERP AI. Those are the two search nodes that I have integrated into the agent. Wonderful, and one thing it's worth mentioning that Alicia is not a software engineer. Yes, that's so cool. I'm an economist by profession. That's wonderful. I have zero software engineering background, but for some reason I have gravitated towards a tech world and have become a quasi-software engineer it seems.\",\n  \"segments\": [\n    {\n      \"id\": 0,\n      \"seek\": 0,\n      \"start\": 0.0,\n      \"end\": 6.64,\n      \"text\": \" I'm with Alicia, and she has built an innate workflow that helps a son to fish scholarships.\",\n      \"tokens\": [\n        50364, 286, 478, 365, 38153, 11, 293, 750, 575, 3094, 364, 41766, 20993,\n        300, 3665, 257, 1872, 281, 3506, 28474, 13, 50692\n      ],\n      \"temperature\": 0.0,\n      \"avg_logprob\": -0.2006613314151764,\n      \"compression_ratio\": 1.5944444444444446,\n      \"no_speech_prob\": 0.03206869587302208,\n      \"words\": [\n        {\n          \"word\": \" I'm\",\n          \"start\": 0.0,\n          \"end\": 0.4,\n          \"probability\": 0.6527446657419205\n        },\n        {\n          \"word\": \" with\",\n          \"start\": 0.4,\n          \"end\": 0.64,\n          \"probability\": 0.9863085150718689\n        },\n        {\n          \"word\": \" Alicia,\",\n          \"start\": 0.64,\n          \"end\": 0.98,\n          \"probability\": 0.7589511275291443\n        },\n        {\n          \"word\": \" and\",\n          \"start\": 1.46,\n          \"end\": 1.46,\n          \"probability\": 0.9107301831245422\n        },\n        {\n          \"word\": \" she\",\n          \"start\": 1.46,\n          \"end\": 1.74,\n          \"probability\": 0.9956566095352173\n        },\n        {\n          \"word\": \" has\",\n          \"start\": 1.74,\n          \"end\": 2.14,\n          \"probability\": 0.9797425866127014\n        },\n        {\n          \"word\": \" built\",\n          \"start\": 2.14,\n          \"end\": 2.54,\n          \"probability\": 0.9795475602149963\n        },\n        {\n          \"word\": \" an\",\n          \"start\": 2.54,\n          \"end\": 3.04,\n          \"probability\": 0.8390932083129883\n        },\n        {\n          \"word\": \" n8n\",\n          \"start\": 3.04,\n          \"end\": 3.18,\n          \"probability\": 0.46002185344696045\n        },\n        {\n          \"word\": \" workflow\",\n          \"start\": 3.18,\n          \"end\": 3.64,\n          \"probability\": 0.6039931774139404\n        },\n        {\n          \"word\": \" that\",\n          \"start\": 3.64,\n          \"end\": 3.94,\n          \"probability\": 0.976235032081604\n        },\n        {\n          \"word\": \" helps\",\n          \"start\": 3.94,\n          \"end\": 4.22,\n          \"probability\": 0.9955497980117798\n        },\n        {\n          \"word\": \" a\",\n          \"start\": 4.22,\n          \"end\": 4.58,\n          \"probability\": 0.5137079358100891\n        },\n        {\n          \"word\": \" son\",\n          \"start\": 4.58,\n          \"end\": 5.0,\n          \"probability\": 0.9642161130905151\n        },\n        {\n          \"word\": \" to\",\n          \"start\": 5.0,\n          \"end\": 5.82,\n          \"probability\": 0.9572210907936096\n        },\n        {\n          \"word\": \" fish\",\n          \"start\": 5.82,\n          \"end\": 6.2,\n          \"probability\": 0.8539407849311829\n        },\n        {\n          \"word\": \" scholarships.\",\n          \"start\": 6.2,\n          \"end\": 6.64,\n          \"probability\": 0.9814459681510925\n        }\n      ]\n    },\n    {\n      \"id\": 1,\n      \"seek\": 0,\n      \"start\": 6.96,\n      \"end\": 15.02,\n      \"text\": \" Alicia, what did you build? Tell us more about that. Okay, so the scholarship workflow, research\",\n      \"tokens\": [\n        50692, 38153, 11, 437, 630, 291, 1322, 30, 5115, 505, 544, 466, 300, 13,\n        1033, 11, 370, 264, 16178, 20993, 11, 2132, 51108\n      ],\n      \"temperature\": 0.0,\n      \"avg_logprob\": -0.2006613314151764,\n      \"compression_ratio\": 1.5944444444444446,\n      \"no_speech_prob\": 0.03206869587302208,\n      \"words\": [\n        {\n          \"word\": \" Alicia,\",\n          \"start\": 6.96,\n          \"end\": 7.04,\n          \"probability\": 0.9515209794044495\n        },\n        {\n          \"word\": \" what\",\n          \"start\": 7.1,\n          \"end\": 7.2,\n          \"probability\": 0.9789930582046509\n        },\n        {\n          \"word\": \" did\",\n          \"start\": 7.2,\n          \"end\": 7.4,\n          \"probability\": 0.9801902174949646\n        },\n        {\n          \"word\": \" you\",\n          \"start\": 7.4,\n          \"end\": 7.58,\n          \"probability\": 0.9985859394073486\n        },\n        {\n          \"word\": \" build?\",\n          \"start\": 7.58,\n          \"end\": 7.7,\n          \"probability\": 0.9750587344169617\n        },\n        {\n          \"word\": \" Tell\",\n          \"start\": 7.76,\n          \"end\": 7.88,\n          \"probability\": 0.9740084409713745\n        },\n        {\n          \"word\": \" us\",\n          \"start\": 7.88,\n          \"end\": 8.06,\n          \"probability\": 0.9981027245521545\n        },\n        {\n          \"word\": \" more\",\n          \"start\": 8.06,\n          \"end\": 8.22,\n          \"probability\": 0.9942108392715454\n        },\n        {\n          \"word\": \" about\",\n          \"start\": 8.22,\n          \"end\": 8.48,\n          \"probability\": 0.9967684745788574\n        },\n        {\n          \"word\": \" that.\",\n          \"start\": 8.48,\n          \"end\": 9.2,\n          \"probability\": 0.9963669776916504\n        },\n        {\n          \"word\": \" Okay,\",\n          \"start\": 10.12,\n          \"end\": 10.56,\n          \"probability\": 0.6135832071304321\n        },\n        {\n          \"word\": \" so\",\n          \"start\": 10.86,\n          \"end\": 11.28,\n          \"probability\": 0.9773343205451965\n        },\n        {\n          \"word\": \" the\",\n          \"start\": 11.28,\n          \"end\": 12.48,\n          \"probability\": 0.9371795654296875\n        },\n        {\n          \"word\": \" scholarship\",\n          \"start\": 12.48,\n          \"end\": 13.26,\n          \"probability\": 0.7845472097396851\n        },\n        {\n          \"word\": \" workflow,\",\n          \"start\": 13.26,\n          \"end\": 14.38,\n          \"probability\": 0.9044411182403564\n        },\n        {\n          \"word\": \" research\",\n          \"start\": 14.58,\n          \"end\": 15.02,\n          \"probability\": 0.961479663848877\n        }\n      ]\n    },\n    {\n      \"id\": 2,\n      \"seek\": 0,\n      \"start\": 15.02,\n      \"end\": 23.02,\n      \"text\": \" workflow that I built using innate and actually aggregates different scholarships that's tailored\",\n      \"tokens\": [\n        51108, 20993, 300, 286, 3094, 1228, 41766, 293, 767, 16743, 1024, 819,\n        28474, 300, 311, 34858, 51508\n      ],\n      \"temperature\": 0.0,\n      \"avg_logprob\": -0.2006613314151764,\n      \"compression_ratio\": 1.5944444444444446,\n      \"no_speech_prob\": 0.03206869587302208,\n      \"words\": [\n        {\n          \"word\": \" workflow\",\n          \"start\": 15.02,\n          \"end\": 15.7,\n          \"probability\": 0.9871970415115356\n        },\n        {\n          \"word\": \" that\",\n          \"start\": 15.7,\n          \"end\": 16.04,\n          \"probability\": 0.7528183460235596\n        },\n        {\n          \"word\": \" I\",\n          \"start\": 16.04,\n          \"end\": 16.26,\n          \"probability\": 0.9951110482215881\n        },\n        {\n          \"word\": \" built\",\n          \"start\": 16.26,\n          \"end\": 16.44,\n          \"probability\": 0.7952321171760559\n        },\n        {\n          \"word\": \" using\",\n          \"start\": 16.44,\n          \"end\": 16.86,\n          \"probability\": 0.9840186238288879\n        },\n        {\n          \"word\": \" innate\",\n          \"start\": 16.86,\n          \"end\": 17.2,\n          \"probability\": 0.9744458794593811\n        },\n        {\n          \"word\": \" and\",\n          \"start\": 17.2,\n          \"end\": 17.76,\n          \"probability\": 0.6389583349227905\n        },\n        {\n          \"word\": \" actually\",\n          \"start\": 17.76,\n          \"end\": 18.58,\n          \"probability\": 0.9856029748916626\n        },\n        {\n          \"word\": \" aggregates\",\n          \"start\": 18.58,\n          \"end\": 19.96,\n          \"probability\": 0.9924243688583374\n        },\n        {\n          \"word\": \" different\",\n          \"start\": 19.96,\n          \"end\": 21.22,\n          \"probability\": 0.9060649871826172\n        },\n        {\n          \"word\": \" scholarships\",\n          \"start\": 21.22,\n          \"end\": 21.88,\n          \"probability\": 0.99790358543396\n        },\n        {\n          \"word\": \" that's\",\n          \"start\": 21.88,\n          \"end\": 22.66,\n          \"probability\": 0.8323150277137756\n        },\n        {\n          \"word\": \" tailored\",\n          \"start\": 22.66,\n          \"end\": 23.02,\n          \"probability\": 0.9983866214752197\n        }\n      ]\n    },\n    {\n      \"id\": 3,\n      \"seek\": 2302,\n      \"start\": 23.02,\n      \"end\": 32.64,\n      \"text\": \" specifically to my son, and so it is using his personal information with regards to all his\",\n      \"tokens\": [\n        50364, 4682, 281, 452, 1872, 11, 293, 370, 309, 307, 1228, 702, 2973,\n        1589, 365, 14258, 281, 439, 702, 50836\n      ],\n      \"temperature\": 0.0,\n      \"avg_logprob\": -0.2603769302368164,\n      \"compression_ratio\": 1.5053191489361701,\n      \"no_speech_prob\": 0.4710891842842102,\n      \"words\": [\n        {\n          \"word\": \" specifically\",\n          \"start\": 23.02,\n          \"end\": 23.68,\n          \"probability\": 0.20157235860824585\n        },\n        {\n          \"word\": \" to\",\n          \"start\": 23.68,\n          \"end\": 24.08,\n          \"probability\": 0.9341544508934021\n        },\n        {\n          \"word\": \" my\",\n          \"start\": 24.08,\n          \"end\": 24.46,\n          \"probability\": 0.9975653886795044\n        },\n        {\n          \"word\": \" son,\",\n          \"start\": 24.46,\n          \"end\": 24.76,\n          \"probability\": 0.9979680180549622\n        },\n        {\n          \"word\": \" and\",\n          \"start\": 25.28,\n          \"end\": 25.68,\n          \"probability\": 0.8968985676765442\n        },\n        {\n          \"word\": \" so\",\n          \"start\": 25.68,\n          \"end\": 26.36,\n          \"probability\": 0.9917992353439331\n        },\n        {\n          \"word\": \" it\",\n          \"start\": 26.36,\n          \"end\": 26.58,\n          \"probability\": 0.9320977926254272\n        },\n        {\n          \"word\": \" is\",\n          \"start\": 26.58,\n          \"end\": 27.76,\n          \"probability\": 0.9974969029426575\n        },\n        {\n          \"word\": \" using\",\n          \"start\": 27.76,\n          \"end\": 28.4,\n          \"probability\": 0.9591072201728821\n        },\n        {\n          \"word\": \" his\",\n          \"start\": 28.4,\n          \"end\": 29.36,\n          \"probability\": 0.998573899269104\n        },\n        {\n          \"word\": \" personal\",\n          \"start\": 29.36,\n          \"end\": 30.08,\n          \"probability\": 0.9971261620521545\n        },\n        {\n          \"word\": \" information\",\n          \"start\": 30.08,\n          \"end\": 31.1,\n          \"probability\": 0.9983853101730347\n        },\n        {\n          \"word\": \" with\",\n          \"start\": 31.1,\n          \"end\": 31.38,\n          \"probability\": 0.860979437828064\n        },\n        {\n          \"word\": \" regards\",\n          \"start\": 31.38,\n          \"end\": 31.76,\n          \"probability\": 0.9816255569458008\n        },\n        {\n          \"word\": \" to\",\n          \"start\": 31.76,\n          \"end\": 32.24,\n          \"probability\": 0.9960533380508423\n        },\n        {\n          \"word\": \" all\",\n          \"start\": 32.24,\n          \"end\": 32.44,\n          \"probability\": 0.9809082746505737\n        },\n        {\n          \"word\": \" his\",\n          \"start\": 32.44,\n          \"end\": 32.64,\n          \"probability\": 0.7970635294914246\n        }\n      ]\n    },\n    {\n      \"id\": 4,\n      \"seek\": 2302,\n      \"start\": 32.64,\n      \"end\": 41.34,\n      \"text\": \" demographic information, his interest, his bracket sheet, everything to actually scrape different\",\n      \"tokens\": [\n        50836, 26331, 1589, 11, 702, 1179, 11, 702, 16904, 8193, 11, 1203, 281,\n        767, 32827, 819, 51280\n      ],\n      \"temperature\": 0.0,\n      \"avg_logprob\": -0.2603769302368164,\n      \"compression_ratio\": 1.5053191489361701,\n      \"no_speech_prob\": 0.4710891842842102,\n      \"words\": [\n        {\n          \"word\": \" demographic\",\n          \"start\": 32.64,\n          \"end\": 33.3,\n          \"probability\": 0.9061843156814575\n        },\n        {\n          \"word\": \" information,\",\n          \"start\": 33.3,\n          \"end\": 34.08,\n          \"probability\": 0.8866920471191406\n        },\n        {\n          \"word\": \" his\",\n          \"start\": 34.28,\n          \"end\": 34.64,\n          \"probability\": 0.9961181879043579\n        },\n        {\n          \"word\": \" interest,\",\n          \"start\": 34.64,\n          \"end\": 35.22,\n          \"probability\": 0.5743141174316406\n        },\n        {\n          \"word\": \" his\",\n          \"start\": 35.7,\n          \"end\": 35.9,\n          \"probability\": 0.9747354984283447\n        },\n        {\n          \"word\": \" bracket\",\n          \"start\": 35.9,\n          \"end\": 36.26,\n          \"probability\": 0.39191997051239014\n        },\n        {\n          \"word\": \" sheet,\",\n          \"start\": 36.26,\n          \"end\": 36.74,\n          \"probability\": 0.9350572228431702\n        },\n        {\n          \"word\": \" everything\",\n          \"start\": 36.98,\n          \"end\": 37.42,\n          \"probability\": 0.9947375655174255\n        },\n        {\n          \"word\": \" to\",\n          \"start\": 37.42,\n          \"end\": 38.16,\n          \"probability\": 0.6601935029029846\n        },\n        {\n          \"word\": \" actually\",\n          \"start\": 38.16,\n          \"end\": 39.4,\n          \"probability\": 0.9982206225395203\n        },\n        {\n          \"word\": \" scrape\",\n          \"start\": 39.4,\n          \"end\": 40.24,\n          \"probability\": 0.9716104865074158\n        },\n        {\n          \"word\": \" different\",\n          \"start\": 40.24,\n          \"end\": 41.34,\n          \"probability\": 0.9798721671104431\n        }\n      ]\n    },\n    {\n      \"id\": 5,\n      \"seek\": 2302,\n      \"start\": 41.34,\n      \"end\": 49.16,\n      \"text\": \" websites through Tabli and the SERP AI. Those are the two search nodes that I have integrated\",\n      \"tokens\": [\n        51280, 12891, 807, 14106, 2081, 293, 264, 36772, 47, 7318, 13, 3950,\n        366, 264, 732, 3164, 13891, 300, 286, 362, 10919, 51696\n      ],\n      \"temperature\": 0.0,\n      \"avg_logprob\": -0.2603769302368164,\n      \"compression_ratio\": 1.5053191489361701,\n      \"no_speech_prob\": 0.4710891842842102,\n      \"words\": [\n        {\n          \"word\": \" websites\",\n          \"start\": 41.34,\n          \"end\": 42.26,\n          \"probability\": 0.9439270496368408\n        },\n        {\n          \"word\": \" through\",\n          \"start\": 42.26,\n          \"end\": 42.64,\n          \"probability\": 0.992099940776825\n        },\n        {\n          \"word\": \" Tabli\",\n          \"start\": 42.64,\n          \"end\": 43.22,\n          \"probability\": 0.448227658867836\n        },\n        {\n          \"word\": \" and\",\n          \"start\": 43.22,\n          \"end\": 44.02,\n          \"probability\": 0.8120644688606262\n        },\n        {\n          \"word\": \" the\",\n          \"start\": 44.02,\n          \"end\": 44.18,\n          \"probability\": 0.4072829484939575\n        },\n        {\n          \"word\": \" SERP\",\n          \"start\": 44.18,\n          \"end\": 44.58,\n          \"probability\": 0.7675552070140839\n        },\n        {\n          \"word\": \" AI.\",\n          \"start\": 44.58,\n          \"end\": 44.9,\n          \"probability\": 0.3334517776966095\n        },\n        {\n          \"word\": \" Those\",\n          \"start\": 45.0,\n          \"end\": 45.18,\n          \"probability\": 0.9942095279693604\n        },\n        {\n          \"word\": \" are\",\n          \"start\": 45.18,\n          \"end\": 45.38,\n          \"probability\": 0.9994767308235168\n        },\n        {\n          \"word\": \" the\",\n          \"start\": 45.38,\n          \"end\": 45.62,\n          \"probability\": 0.9954450130462646\n        },\n        {\n          \"word\": \" two\",\n          \"start\": 45.62,\n          \"end\": 47.24,\n          \"probability\": 0.9834274649620056\n        },\n        {\n          \"word\": \" search\",\n          \"start\": 47.24,\n          \"end\": 47.54,\n          \"probability\": 0.9603464603424072\n        },\n        {\n          \"word\": \" nodes\",\n          \"start\": 47.54,\n          \"end\": 47.7,\n          \"probability\": 0.6613865494728088\n        },\n        {\n          \"word\": \" that\",\n          \"start\": 47.7,\n          \"end\": 48.06,\n          \"probability\": 0.9660003781318665\n        },\n        {\n          \"word\": \" I\",\n          \"start\": 48.06,\n          \"end\": 48.26,\n          \"probability\": 0.9792650938034058\n        },\n        {\n          \"word\": \" have\",\n          \"start\": 48.26,\n          \"end\": 48.48,\n          \"probability\": 0.9984147548675537\n        },\n        {\n          \"word\": \" integrated\",\n          \"start\": 48.48,\n          \"end\": 49.16,\n          \"probability\": 0.9974810481071472\n        }\n      ]\n    },\n    {\n      \"id\": 6,\n      \"seek\": 4916,\n      \"start\": 49.16,\n      \"end\": 59.76,\n      \"text\": \" into the agent. Wonderful, and one thing it's worth mentioning that Alicia is not a software engineer.\",\n      \"tokens\": [\n        50388, 666, 264, 9461, 13, 22768, 11, 293, 472, 551, 309, 311, 3163,\n        18315, 300, 38153, 307, 406, 257, 4722, 11403, 13, 50888\n      ],\n      \"temperature\": 0.0,\n      \"avg_logprob\": -0.23256194774921124,\n      \"compression_ratio\": 1.5054347826086956,\n      \"no_speech_prob\": 0.006308375392109156,\n      \"words\": [\n        {\n          \"word\": \" into\",\n          \"start\": 49.16,\n          \"end\": 50.22,\n          \"probability\": 0.30486220121383667\n        },\n        {\n          \"word\": \" the\",\n          \"start\": 50.22,\n          \"end\": 51.7,\n          \"probability\": 0.7441971302032471\n        },\n        {\n          \"word\": \" agent.\",\n          \"start\": 51.7,\n          \"end\": 53.0,\n          \"probability\": 0.5164040327072144\n        },\n        {\n          \"word\": \" Wonderful,\",\n          \"start\": 54.76,\n          \"end\": 55.24,\n          \"probability\": 0.16604670882225037\n        },\n        {\n          \"word\": \" and\",\n          \"start\": 55.74,\n          \"end\": 55.98,\n          \"probability\": 0.8674631714820862\n        },\n        {\n          \"word\": \" one\",\n          \"start\": 55.98,\n          \"end\": 56.42,\n          \"probability\": 0.947163999080658\n        },\n        {\n          \"word\": \" thing\",\n          \"start\": 56.42,\n          \"end\": 56.76,\n          \"probability\": 0.9948541522026062\n        },\n        {\n          \"word\": \" it's\",\n          \"start\": 56.76,\n          \"end\": 57.04,\n          \"probability\": 0.7073782682418823\n        },\n        {\n          \"word\": \" worth\",\n          \"start\": 57.04,\n          \"end\": 57.22,\n          \"probability\": 0.9949094653129578\n        },\n        {\n          \"word\": \" mentioning\",\n          \"start\": 57.22,\n          \"end\": 57.64,\n          \"probability\": 0.9913060069084167\n        },\n        {\n          \"word\": \" that\",\n          \"start\": 57.64,\n          \"end\": 57.9,\n          \"probability\": 0.7119730114936829\n        },\n        {\n          \"word\": \" Alicia\",\n          \"start\": 57.9,\n          \"end\": 58.26,\n          \"probability\": 0.7780694365501404\n        },\n        {\n          \"word\": \" is\",\n          \"start\": 58.26,\n          \"end\": 58.56,\n          \"probability\": 0.9878051280975342\n        },\n        {\n          \"word\": \" not\",\n          \"start\": 58.56,\n          \"end\": 58.8,\n          \"probability\": 0.9984209537506104\n        },\n        {\n          \"word\": \" a\",\n          \"start\": 58.8,\n          \"end\": 58.96,\n          \"probability\": 0.9912617206573486\n        },\n        {\n          \"word\": \" software\",\n          \"start\": 58.96,\n          \"end\": 59.22,\n          \"probability\": 0.9709803462028503\n        },\n        {\n          \"word\": \" engineer.\",\n          \"start\": 59.22,\n          \"end\": 59.76,\n          \"probability\": 0.9980473518371582\n        }\n      ]\n    },\n    {\n      \"id\": 7,\n      \"seek\": 4916,\n      \"start\": 61.98,\n      \"end\": 69.38,\n      \"text\": \" Yes, that's so cool. I'm an economist by profession. That's wonderful. I have\",\n      \"tokens\": [\n        50996, 1079, 11, 300, 311, 370, 1627, 13, 286, 478, 364, 36696, 538,\n        7032, 13, 663, 311, 3715, 13, 286, 362, 51276\n      ],\n      \"temperature\": 0.0,\n      \"avg_logprob\": -0.23256194774921124,\n      \"compression_ratio\": 1.5054347826086956,\n      \"no_speech_prob\": 0.006308375392109156,\n      \"words\": [\n        {\n          \"word\": \" Yes,\",\n          \"start\": 61.98,\n          \"end\": 62.6,\n          \"probability\": 0.9142229557037354\n        },\n        {\n          \"word\": \" that's\",\n          \"start\": 62.8,\n          \"end\": 63.28,\n          \"probability\": 0.9789824783802032\n        },\n        {\n          \"word\": \" so\",\n          \"start\": 63.28,\n          \"end\": 63.4,\n          \"probability\": 0.9928223490715027\n        },\n        {\n          \"word\": \" cool.\",\n          \"start\": 63.4,\n          \"end\": 63.5,\n          \"probability\": 0.9969159364700317\n        },\n        {\n          \"word\": \" I'm\",\n          \"start\": 63.68,\n          \"end\": 63.72,\n          \"probability\": 0.6840991675853729\n        },\n        {\n          \"word\": \" an\",\n          \"start\": 63.72,\n          \"end\": 63.72,\n          \"probability\": 0.8507968187332153\n        },\n        {\n          \"word\": \" economist\",\n          \"start\": 63.72,\n          \"end\": 64.22,\n          \"probability\": 0.9731193780899048\n        },\n        {\n          \"word\": \" by\",\n          \"start\": 64.22,\n          \"end\": 64.86,\n          \"probability\": 0.5524037480354309\n        },\n        {\n          \"word\": \" profession.\",\n          \"start\": 64.86,\n          \"end\": 65.54,\n          \"probability\": 0.7997592687606812\n        },\n        {\n          \"word\": \" That's\",\n          \"start\": 65.72,\n          \"end\": 66.32,\n          \"probability\": 0.9680420756340027\n        },\n        {\n          \"word\": \" wonderful.\",\n          \"start\": 66.32,\n          \"end\": 66.92,\n          \"probability\": 0.9806666970252991\n        },\n        {\n          \"word\": \" I\",\n          \"start\": 68.98,\n          \"end\": 69.1,\n          \"probability\": 0.9112382531166077\n        },\n        {\n          \"word\": \" have\",\n          \"start\": 69.1,\n          \"end\": 69.38,\n          \"probability\": 0.9952109456062317\n        }\n      ]\n    },\n    {\n      \"id\": 8,\n      \"seek\": 4916,\n      \"start\": 69.38,\n      \"end\": 79.14,\n      \"text\": \" zero software engineering background, but for some reason I have gravitated towards a tech world\",\n      \"tokens\": [\n        51320, 4018, 4722, 7043, 3678, 11, 457, 337, 512, 1778, 286, 362, 7427,\n        18266, 3030, 257, 7553, 1002, 51860\n      ],\n      \"temperature\": 0.0,\n      \"avg_logprob\": -0.23256194774921124,\n      \"compression_ratio\": 1.5054347826086956,\n      \"no_speech_prob\": 0.006308375392109156,\n      \"words\": [\n        {\n          \"word\": \" zero\",\n          \"start\": 69.38,\n          \"end\": 70.54,\n          \"probability\": 0.8487266302108765\n        },\n        {\n          \"word\": \" software\",\n          \"start\": 70.54,\n          \"end\": 71.92,\n          \"probability\": 0.9689549207687378\n        },\n        {\n          \"word\": \" engineering\",\n          \"start\": 71.92,\n          \"end\": 72.72,\n          \"probability\": 0.992659866809845\n        },\n        {\n          \"word\": \" background,\",\n          \"start\": 72.72,\n          \"end\": 73.46,\n          \"probability\": 0.9942799806594849\n        },\n        {\n          \"word\": \" but\",\n          \"start\": 73.66,\n          \"end\": 74.54,\n          \"probability\": 0.9975802898406982\n        },\n        {\n          \"word\": \" for\",\n          \"start\": 74.54,\n          \"end\": 75.26,\n          \"probability\": 0.9705145955085754\n        },\n        {\n          \"word\": \" some\",\n          \"start\": 75.26,\n          \"end\": 75.82,\n          \"probability\": 0.9996248483657837\n        },\n        {\n          \"word\": \" reason\",\n          \"start\": 75.82,\n          \"end\": 76.38,\n          \"probability\": 0.9992019534111023\n        },\n        {\n          \"word\": \" I\",\n          \"start\": 76.38,\n          \"end\": 76.62,\n          \"probability\": 0.7546116709709167\n        },\n        {\n          \"word\": \" have\",\n          \"start\": 76.62,\n          \"end\": 76.98,\n          \"probability\": 0.9966539144515991\n        },\n        {\n          \"word\": \" gravitated\",\n          \"start\": 76.98,\n          \"end\": 77.72,\n          \"probability\": 0.9984849691390991\n        },\n        {\n          \"word\": \" towards\",\n          \"start\": 77.72,\n          \"end\": 78.3,\n          \"probability\": 0.9736058115959167\n        },\n        {\n          \"word\": \" a\",\n          \"start\": 78.3,\n          \"end\": 78.56,\n          \"probability\": 0.8747778534889221\n        },\n        {\n          \"word\": \" tech\",\n          \"start\": 78.56,\n          \"end\": 78.88,\n          \"probability\": 0.9964922070503235\n        },\n        {\n          \"word\": \" world\",\n          \"start\": 78.88,\n          \"end\": 79.14,\n          \"probability\": 0.990685760974884\n        }\n      ]\n    },\n    {\n      \"id\": 9,\n      \"seek\": 7916,\n      \"start\": 79.16,\n      \"end\": 83.9,\n      \"text\": \" and have become a quasi-software engineer it seems.\",\n      \"tokens\": [\n        50364, 293, 362, 1813, 257, 20954, 12, 13908, 3039, 11403, 309, 2544,\n        13, 50604\n      ],\n      \"temperature\": 0.0,\n      \"avg_logprob\": -0.3203938802083333,\n      \"compression_ratio\": 0.9107142857142857,\n      \"no_speech_prob\": 0.001265641418285668,\n      \"words\": [\n        {\n          \"word\": \" and\",\n          \"start\": 79.16,\n          \"end\": 79.56,\n          \"probability\": 0.9151437282562256\n        },\n        {\n          \"word\": \" have\",\n          \"start\": 79.56,\n          \"end\": 79.86,\n          \"probability\": 0.9733433723449707\n        },\n        {\n          \"word\": \" become\",\n          \"start\": 79.86,\n          \"end\": 80.98,\n          \"probability\": 0.9953816533088684\n        },\n        {\n          \"word\": \" a\",\n          \"start\": 80.98,\n          \"end\": 81.66,\n          \"probability\": 0.6983909010887146\n        },\n        {\n          \"word\": \" quasi\",\n          \"start\": 81.66,\n          \"end\": 82.32,\n          \"probability\": 0.9632044434547424\n        },\n        {\n          \"word\": \"-software\",\n          \"start\": 82.32,\n          \"end\": 82.92,\n          \"probability\": 0.8068392674128214\n        },\n        {\n          \"word\": \" engineer\",\n          \"start\": 82.92,\n          \"end\": 83.44,\n          \"probability\": 0.9787577986717224\n        },\n        {\n          \"word\": \" it\",\n          \"start\": 83.44,\n          \"end\": 83.72,\n          \"probability\": 0.4152226448059082\n        },\n        {\n          \"word\": \" seems.\",\n          \"start\": 83.72,\n          \"end\": 83.9,\n          \"probability\": 0.9930486679077148\n        }\n      ]\n    }\n  ],\n  \"language\": \"en\"\n}\n\nreturn json;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        -192
+      ],
+      "id": "01db4bae-55be-4ea3-958c-8e5f6d3d7233",
+      "name": "WIP: Mock JSON"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node - Whisper Transcription Data Processor\n// Processes Whisper API transcription output with segments and word-level timing\n// Compatible with n8n workflow automation\n\n// Get input data from n8n\nconst items = $input.all();\n\nfunction processTranscriptionData(data) {\n  // Extract main text\n  const fullText = data.text || '';\n\n  // Process segments\n  const segments = (data.segments || []).map((segment, index) => {\n    return {\n      id: segment.id || index,\n      startTime: segment.start || 0,\n      endTime: segment.end || 0,\n      duration: (segment.end || 0) - (segment.start || 0),\n      text: segment.text || '',\n\n      // Include word-level data for karaoke subtitles\n      words: segment.words || [],\n\n      // Confidence metrics\n      avgLogProb: segment.avg_logprob || 0,\n      noSpeechProb: segment.no_speech_prob || 0,\n      temperature: segment.temperature || 0,\n      compressionRatio: segment.compression_ratio || 0,\n\n      // Word count and timing analysis\n      wordCount: (segment.words || []).length,\n      wordsPerSecond: segment.words ?\n        segment.words.length / ((segment.end || 0) - (segment.start || 0) || 1) : 0,\n\n      // Extract high-confidence words (probability > 0.8)\n      highConfidenceWords: (segment.words || []).filter(word =>\n        (word.probability || 0) > 0.8\n      ).map(word => word.word).join(' '),\n\n      // Extract low-confidence words (probability < 0.5) for review\n      lowConfidenceWords: (segment.words || []).filter(word =>\n        (word.probability || 0) < 0.5\n      ).map(word => ({\n        word: word.word,\n        probability: word.probability,\n        start: word.start,\n        end: word.end\n      }))\n    };\n  });\n\n  // Generate summary statistics\n  const stats = {\n    totalDuration: segments.length > 0 ?\n      Math.max(...segments.map(s => s.endTime)) : 0,\n    totalSegments: segments.length,\n    totalWords: segments.reduce((sum, seg) => sum + seg.wordCount, 0),\n    averageConfidence: segments.length > 0 ?\n      segments.reduce((sum, seg) => sum + Math.abs(seg.avgLogProb), 0) / segments.length : 0,\n    languageDetected: data.language || 'unknown',\n\n    // Identify segments with potential issues\n    lowConfidenceSegments: segments.filter(seg => seg.avgLogProb < -0.5).length,\n    highNoSpeechSegments: segments.filter(seg => seg.noSpeechProb > 0.1).length\n  };\n\n  // Extract timestamps for easy navigation\n  const timeMarkers = segments.map(segment => ({\n    segmentId: segment.id,\n    timestamp: segment.startTime,\n    text: segment.text.substring(0, 50) + (segment.text.length > 50 ? '...' : ''),\n    confidence: Math.abs(segment.avgLogProb)\n  }));\n\n  // Generate cleaned transcript (remove filler words, fix spacing)\n  const cleanedText = fullText\n    .replace(/\\s+/g, ' ')  // Multiple spaces to single\n    .replace(/\\b(um|uh|er|ah)\\b/gi, '')  // Remove common filler words\n    .replace(/\\s+/g, ' ')  // Clean up spaces after filler removal\n    .trim();\n\n  // Split into paragraphs based on longer pauses (gaps > 2 seconds)\n  const paragraphs = [];\n  let currentParagraph = [];\n\n  for (let i = 0; i < segments.length; i++) {\n    const currentSegment = segments[i];\n    const nextSegment = segments[i + 1];\n\n    currentParagraph.push(currentSegment.text.trim());\n\n    // End paragraph if there's a significant pause or it's the last segment\n    if (!nextSegment || (nextSegment.startTime - currentSegment.endTime) > 2) {\n      if (currentParagraph.length > 0) {\n        paragraphs.push(currentParagraph.join(' ').trim());\n        currentParagraph = [];\n      }\n    }\n  }\n\n  return {\n    // Original data\n    originalText: fullText,\n    language: data.language,\n\n    // Processed data\n    cleanedText,\n    paragraphs,\n    segments,\n\n    // Analytics\n    statistics: stats,\n    timeMarkers,\n\n    // For further processing\n    exportFormats: {\n      srt: generateSRT(segments),\n      vtt: generateVTT(segments),\n      ass: generateASS(segments),\n      plainText: cleanedText,\n      wordTimings: extractWordTimings(data.segments || [])\n    }\n  };\n}\n\n// Generate SRT subtitle format\nfunction generateSRT(segments) {\n  return segments.map((segment, index) => {\n    const startTime = formatTime(segment.startTime);\n    const endTime = formatTime(segment.endTime);\n    return `${index + 1}\\n${startTime} --> ${endTime}\\n${segment.text.trim()}\\n`;\n  }).join('\\n');\n}\n\n// Generate WebVTT subtitle format\nfunction generateVTT(segments) {\n  const vttHeader = 'WEBVTT\\n\\n';\n  const vttContent = segments.map((segment, index) => {\n    const startTime = formatTime(segment.startTime, true);\n    const endTime = formatTime(segment.endTime, true);\n    return `${startTime} --> ${endTime}\\n${segment.text.trim()}\\n`;\n  }).join('\\n');\n  return vttHeader + vttContent;\n}\n\n// Generate ASS subtitle format with karaoke-style word-by-word timing\nfunction generateASS(segments) {\n  const assHeader = `[Script Info]\nTitle: Karaoke Subtitles\nScriptType: v4.00+\nWrapStyle: 0\nScaledBorderAndShadow: yes\nYCbCr Matrix: TV.601\nPlayResX: 1920\nPlayResY: 1080\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Arial,84,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,4,5,50,50,50,1\nStyle: Karaoke,Arial,84,&H0000FFFF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,4,5,50,50,50,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;\n\n  const assEvents = [];\n\n  segments.forEach(segment => {\n    if (segment.words && segment.words.length > 0) {\n      // Create karaoke-style word-by-word events\n      segment.words.forEach(word => {\n        const startTime = formatASSTime(word.start || segment.startTime);\n        const endTime = formatASSTime(word.end || segment.endTime);\n        const cleanWord = (word.word || '').trim().replace(/\\n/g, '\\\\N');\n\n        if (cleanWord) {\n          assEvents.push(`Dialogue: 0,${startTime},${endTime},Karaoke,,0,0,0,,${cleanWord}`);\n        }\n      });\n    } else {\n      // Fallback: split text by words if no word-level timing available\n      const words = segment.text.trim().split(/\\s+/);\n      const segmentDuration = segment.endTime - segment.startTime;\n      const timePerWord = segmentDuration / words.length;\n\n      words.forEach((word, index) => {\n        const wordStart = segment.startTime + (index * timePerWord);\n        const wordEnd = segment.startTime + ((index + 1) * timePerWord);\n        const startTime = formatASSTime(wordStart);\n        const endTime = formatASSTime(wordEnd);\n        const cleanWord = word.replace(/\\n/g, '\\\\N');\n\n        if (cleanWord) {\n          assEvents.push(`Dialogue: 0,${startTime},${endTime},Karaoke,,0,0,0,,${cleanWord}`);\n        }\n      });\n    }\n  });\n\n  return assHeader + assEvents.join('\\n');\n}\n\n// Format time for ASS subtitles (H:MM:SS.cc)\nfunction formatASSTime(seconds) {\n  const hours = Math.floor(seconds / 3600);\n  const minutes = Math.floor((seconds % 3600) / 60);\n  const secs = Math.floor(seconds % 60);\n  const centiseconds = Math.floor((seconds % 1) * 100);\n\n  return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;\n}\n\n// Format time for subtitles (HH:MM:SS,mmm for SRT, HH:MM:SS.mmm for VTT)\nfunction formatTime(seconds, isVTT = false) {\n  const hours = Math.floor(seconds / 3600);\n  const minutes = Math.floor((seconds % 3600) / 60);\n  const secs = Math.floor(seconds % 60);\n  const ms = Math.floor((seconds % 1) * 1000);\n\n  const separator = isVTT ? '.' : ',';\n  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}${separator}${ms.toString().padStart(3, '0')}`;\n}\n\n// Extract word-level timings\nfunction extractWordTimings(segments) {\n  const wordTimings = [];\n\n  segments.forEach(segment => {\n    if (segment.words) {\n      segment.words.forEach(word => {\n        wordTimings.push({\n          word: word.word?.trim(),\n          start: word.start,\n          end: word.end,\n          duration: (word.end || 0) - (word.start || 0),\n          probability: word.probability,\n          segmentId: segment.id\n        });\n      });\n    }\n  });\n\n  return wordTimings;\n}\n\n// Process all input items for n8n\nconst processedItems = items.map(item => {\n  try {\n    // Handle different input structures\n    let transcriptionData;\n\n    // Check if data is in binary format first\n    if (item.binary && item.binary.data) {\n      // If it's binary data, try to parse it\n      try {\n        const binaryData = item.binary.data;\n        transcriptionData = JSON.parse(binaryData);\n      } catch (e) {\n        console.log('Failed to parse binary data:', e);\n        transcriptionData = item.json || item;\n      }\n    } else if (item.json) {\n      transcriptionData = item.json;\n    } else {\n      transcriptionData = item;\n    }\n\n    // Process the transcription data\n    const processed = processTranscriptionData(transcriptionData);\n\n    return {\n      json: {\n        success: true,\n        processed: processed,\n        metadata: {\n          processedAt: new Date().toISOString(),\n          processingTime: Date.now() - (new Date().getTime()),\n          inputType: 'whisper-transcription'\n        }\n      }\n    };\n\n  } catch (error) {\n    return {\n      json: {\n        success: false,\n        error: error.message,\n        originalData: item,\n        metadata: {\n          processedAt: new Date().toISOString(),\n          inputType: 'error'\n        }\n      }\n    };\n  }\n});\n\n// Return processed items for n8n\nreturn processedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -192
+      ],
+      "id": "0155f51e-42a9-4e7d-8ef4-4bb55179c05a",
+      "name": "JSON to ASS Convertor"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf cut1.mp4; ffmpeg -i video.mp4 \\\n-vf \"crop=1080:960:-300:400\" \\\n-c:v libx264 -crf 18 -preset medium -c:a copy cut1.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        -192
+      ],
+      "id": "7a9144e6-ff02-4a84-ace8-bcb2f6362a4b",
+      "name": "Cut 1",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf cut2.mp4; ffmpeg -i video.mp4 -vf \"crop=974:974:1650:357,scale=1080:960:flags=lanczos\" -c:v libx264 -preset fast -crf 18 -c:a copy cut2.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        -192
+      ],
+      "id": "df61eb3c-8db1-4d5c-835e-308e05f6d563",
+      "name": "Cut 2",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "zsh -lc 'source ~/.zshrc; rm -rf merged.mp4; ffmpeg -i cut1.mp4 -i cut2.mp4 \\\n-filter_complex \"[0:v][1:v]vstack=inputs=2[v]\" \\\n-map \"[v]\" -map \"0:a?\" \\\nmerged.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        -192
+      ],
+      "id": "b8cc94c7-293c-4bd0-984e-17c2f22fbffa",
+      "name": "Merge Cut 1 & 2",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node - Whisper Transcription Data Processor\n// Processes Whisper API transcription output with segments and word-level timing\n// Compatible with n8n workflow automation\n\n// Get input data from n8n\nconst items = $input.all()\n\nconsole.log(\"aaa\", items)\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -192
+      ],
+      "id": "6ece27fb-9e12-430e-ad79-d8965faf5514",
+      "name": "Code in JavaScript",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        -192
+      ],
+      "id": "2c9f7f01-7dc1-49cc-aab1-e25fdadd64b4",
+      "name": "Extract from File",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## FIX IT \n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        480,
+        -352
+      ],
+      "typeVersion": 1,
+      "id": "1b4b93aa-910f-4afa-95d4-1d06ffe90fc6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf cut1.mp4; ffmpeg -i video.mp4 \\\n-vf \"crop=1080:960:-300:400\" \\\n-c:v libx264 -crf 18 -preset medium -c:a copy cut1.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        48
+      ],
+      "id": "4212455a-3893-4ade-a735-dc49fa45257e",
+      "name": "Cut ",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf cut2.mp4; ffmpeg -i video.mp4 \\\n-vf \"crop=1080:960:(iw-1080)/2+700:(ih-960)/2\" \\\n-c:v libx264 -crf 18 -preset medium -c:a copy cut2.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1984,
+        48
+      ],
+      "id": "bbf93477-f83c-475c-815f-b8f1666b2962",
+      "name": "Cut 3",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Compress Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Transcript": {
+      "main": [
+        [
+          {
+            "node": "Get Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Transcript": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compress Video": {
+      "main": [
+        [
+          {
+            "node": "Generate Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Cut 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WIP: Mock JSON": {
+      "main": [
+        [
+          {
+            "node": "JSON to ASS Convertor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSON to ASS Convertor": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cut 1": {
+      "main": [
+        [
+          {
+            "node": "Cut 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cut 2": {
+      "main": [
+        [
+          {
+            "node": "Merge Cut 1 & 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Cut 1 & 2": {
+      "main": [
+        [
+          {
+            "node": "Burn Subtitles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "WIP: Mock JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cut ": {
+      "main": [
+        [
+          {
+            "node": "Cut 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cdc88572-2ff4-4d8c-a587-795a7122563d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1ef27c04422232ed4131fcf36b4f5d8f8efff3c9b6a102a2529f396587e22c55"
+  },
+  "id": "bZQix2X1XRIrSASF",
+  "tags": []
+}
