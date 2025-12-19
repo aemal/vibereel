@@ -236,7 +236,7 @@
             const [video, setVideo] = useState(null);
             const [videoUrl, setVideoUrl] = useState(null);
             const [boxes, setBoxes] = useState([]);
-            const [cutMode, setCutMode] = useState(2); // 1 or 2 cuts
+            const [cutMode, setCutMode] = useState(2); // 1, 2, or 3 cuts
             const [seekTime, setSeekTime] = useState(10);
             const [dragging, setDragging] = useState(null);
             const [videoFrame, setVideoFrame] = useState(null);
@@ -375,7 +375,7 @@
                         height: Math.floor(boxHeight),
                         color: COLORS[0]
                     };
-                } else {
+                } else if (cutMode === 2) {
                     // Two cuts - half reels (1080x960 each)
                     if (boxes.length >= 2) return; // Only allow two rectangles
 
@@ -404,6 +404,46 @@
                         height: Math.floor(boxHeight),
                         color: COLORS[boxes.length % COLORS.length]
                     };
+                } else {
+                    // Three cuts - 2 squares + 1 rectangle (total height: 1920)
+                    if (boxes.length >= 3) return; // Only allow three shapes
+
+                    if (boxes.length < 2) {
+                        // Add squares first (1:1 aspect ratio)
+                        const squareSize = Math.min(width, height) * 0.25; // Start with 25% of smaller dimension
+
+                        const xOffset = boxes.length === 0 ? width * 0.2 : width * 0.6;
+                        const yOffset = height * 0.15;
+
+                        newBox = {
+                            id: boxes.length + 1,
+                            x: xOffset,
+                            y: yOffset,
+                            width: Math.floor(squareSize),
+                            height: Math.floor(squareSize),
+                            color: COLORS[boxes.length % COLORS.length],
+                            type: 'square'
+                        };
+                    } else {
+                        // Add rectangle (calculate height based on squares)
+                        const square1 = boxes[0];
+                        const square2 = boxes[1];
+                        const averageSquareHeight = (square1.height + square2.height) / 2;
+
+                        // Rectangle height = 1920 - (2 * square height)
+                        const rectangleHeight = Math.floor(1920 - (2 * averageSquareHeight));
+                        const rectangleWidth = square1.width + square2.width; // Width equals sum of both squares
+
+                        newBox = {
+                            id: 3,
+                            x: (width - rectangleWidth) / 2,
+                            y: height * 0.6,
+                            width: rectangleWidth,
+                            height: rectangleHeight,
+                            color: COLORS[2],
+                            type: 'rectangle'
+                        };
+                    }
                 }
 
                 setBoxes([...boxes, newBox]);
@@ -438,7 +478,8 @@
                     // Label
                     ctx.fillStyle = box.color;
                     ctx.font = 'bold 24px JetBrains Mono';
-                    ctx.fillText(`Cut ${box.id}`, box.x + 10, box.y + 35);
+                    const label = box.type === 'square' ? `Square ${box.id}` : box.type === 'rectangle' ? 'Rectangle' : `Cut ${box.id}`;
+                    ctx.fillText(label, box.x + 10, box.y + 35);
                     
                     // Size indicator
                     ctx.font = '16px JetBrains Mono';
@@ -465,17 +506,66 @@
 
                 if (cutMode === 1) {
                     aspectRatio = 1080 / 1920; // 1080:1920 ratio for full vertical reel
-                } else {
+                    const newHeight = newWidth / aspectRatio;
+
+                    // Update all boxes to same size
+                    newBoxes.forEach((box, index) => {
+                        box.width = newWidth;
+                        box.height = newHeight;
+                    });
+                } else if (cutMode === 2) {
                     aspectRatio = 1080 / 960; // 1080:960 ratio for half reels
+                    const newHeight = newWidth / aspectRatio;
+
+                    // Update all boxes to same size
+                    newBoxes.forEach((box, index) => {
+                        box.width = newWidth;
+                        box.height = newHeight;
+                    });
+                } else if (cutMode === 3) {
+                    // For 3-cut mode: squares maintain 1:1 ratio, rectangle adjusts to fill remaining height
+                    const changedBox = newBoxes[changedIndex];
+
+                    if (changedBox.type === 'square') {
+                        // If changing a square, keep 1:1 ratio and sync both squares
+                        const newSquareSize = newWidth;
+
+                        // Update both squares
+                        newBoxes.forEach((box, index) => {
+                            if (box.type === 'square') {
+                                box.width = newSquareSize;
+                                box.height = newSquareSize;
+                            }
+                        });
+
+                        // Update rectangle to fit remaining height
+                        const rectangleBox = newBoxes.find(box => box.type === 'rectangle');
+                        if (rectangleBox) {
+                            const rectangleHeight = Math.floor(1920 - (2 * newSquareSize));
+                            const rectangleWidth = newSquareSize + newSquareSize; // Width equals sum of both squares (both same size)
+                            rectangleBox.width = rectangleWidth;
+                            rectangleBox.height = rectangleHeight;
+                        }
+                    } else if (changedBox.type === 'rectangle') {
+                        // For rectangle, width changes proportionally with squares
+                        // Height changes adjust squares accordingly
+                        const newRectHeight = changedBox.height;
+
+                        // Calculate new square size to fit remaining height
+                        const remainingHeight = 1920 - newRectHeight;
+                        const newSquareSize = Math.floor(remainingHeight / 2);
+                        const rectangleWidth = newSquareSize + newSquareSize; // Width equals sum of both squares
+
+                        // Update rectangle width and both squares
+                        changedBox.width = rectangleWidth;
+                        newBoxes.forEach((box, index) => {
+                            if (box.type === 'square') {
+                                box.width = newSquareSize;
+                                box.height = newSquareSize;
+                            }
+                        });
+                    }
                 }
-
-                const newHeight = newWidth / aspectRatio;
-
-                // Update all boxes to same size
-                newBoxes.forEach((box, index) => {
-                    box.width = newWidth;
-                    box.height = newHeight;
-                });
 
                 return newBoxes;
             };
@@ -545,42 +635,102 @@
                     box.y = Math.max(0, Math.min(canvas.height - box.height, mouseY - dragging.startY));
                 } else if (dragging.type.startsWith('resize-')) {
                     const minWidth = 50;
-                    let aspectRatio;
-
-                    if (cutMode === 1) {
-                        aspectRatio = 1080 / 1920; // 1080:1920 ratio for full vertical reel
-                    } else {
-                        aspectRatio = 1080 / 960; // 1080:960 ratio for half reels
-                    }
-
                     let newWidth = box.width;
 
-                    if (dragging.type === 'resize-tl') {
-                        newWidth = box.x + box.width - mouseX;
-                        if (newWidth > minWidth) {
-                            const newHeight = newWidth / aspectRatio;
-                            box.x = box.x + box.width - newWidth;
-                            box.y = box.y + box.height - newHeight;
-                            newBoxes = syncBoxSize(dragging.index, newWidth);
+                    if (cutMode === 1 || cutMode === 2) {
+                        let aspectRatio;
+                        if (cutMode === 1) {
+                            aspectRatio = 1080 / 1920; // 1080:1920 ratio for full vertical reel
+                        } else {
+                            aspectRatio = 1080 / 960; // 1080:960 ratio for half reels
                         }
-                    } else if (dragging.type === 'resize-tr') {
-                        newWidth = mouseX - box.x;
-                        if (newWidth > minWidth) {
-                            const newHeight = newWidth / aspectRatio;
-                            box.y = box.y + box.height - newHeight;
-                            newBoxes = syncBoxSize(dragging.index, newWidth);
+
+                        if (dragging.type === 'resize-tl') {
+                            newWidth = box.x + box.width - mouseX;
+                            if (newWidth > minWidth) {
+                                const newHeight = newWidth / aspectRatio;
+                                box.x = box.x + box.width - newWidth;
+                                box.y = box.y + box.height - newHeight;
+                                newBoxes = syncBoxSize(dragging.index, newWidth);
+                            }
+                        } else if (dragging.type === 'resize-tr') {
+                            newWidth = mouseX - box.x;
+                            if (newWidth > minWidth) {
+                                const newHeight = newWidth / aspectRatio;
+                                box.y = box.y + box.height - newHeight;
+                                newBoxes = syncBoxSize(dragging.index, newWidth);
+                            }
+                        } else if (dragging.type === 'resize-bl') {
+                            newWidth = box.x + box.width - mouseX;
+                            if (newWidth > minWidth) {
+                                const newHeight = newWidth / aspectRatio;
+                                box.x = box.x + box.width - newWidth;
+                                newBoxes = syncBoxSize(dragging.index, newWidth);
+                            }
+                        } else if (dragging.type === 'resize-br') {
+                            newWidth = mouseX - box.x;
+                            if (newWidth > minWidth) {
+                                newBoxes = syncBoxSize(dragging.index, newWidth);
+                            }
                         }
-                    } else if (dragging.type === 'resize-bl') {
-                        newWidth = box.x + box.width - mouseX;
-                        if (newWidth > minWidth) {
-                            const newHeight = newWidth / aspectRatio;
-                            box.x = box.x + box.width - newWidth;
-                            newBoxes = syncBoxSize(dragging.index, newWidth);
-                        }
-                    } else if (dragging.type === 'resize-br') {
-                        newWidth = mouseX - box.x;
-                        if (newWidth > minWidth) {
-                            newBoxes = syncBoxSize(dragging.index, newWidth);
+                    } else if (cutMode === 3) {
+                        // Special handling for 3-cut mode
+                        if (box.type === 'square') {
+                            // For squares, maintain 1:1 aspect ratio
+                            if (dragging.type === 'resize-tl') {
+                                newWidth = box.x + box.width - mouseX;
+                                if (newWidth > minWidth) {
+                                    box.x = box.x + box.width - newWidth;
+                                    box.y = box.y + box.height - newWidth; // Keep square
+                                    newBoxes = syncBoxSize(dragging.index, newWidth);
+                                }
+                            } else if (dragging.type === 'resize-tr') {
+                                newWidth = mouseX - box.x;
+                                if (newWidth > minWidth) {
+                                    box.y = box.y + box.height - newWidth; // Keep square
+                                    newBoxes = syncBoxSize(dragging.index, newWidth);
+                                }
+                            } else if (dragging.type === 'resize-bl') {
+                                newWidth = box.x + box.width - mouseX;
+                                if (newWidth > minWidth) {
+                                    box.x = box.x + box.width - newWidth;
+                                    newBoxes = syncBoxSize(dragging.index, newWidth);
+                                }
+                            } else if (dragging.type === 'resize-br') {
+                                newWidth = mouseX - box.x;
+                                if (newWidth > minWidth) {
+                                    newBoxes = syncBoxSize(dragging.index, newWidth);
+                                }
+                            }
+                        } else if (box.type === 'rectangle') {
+                            // For rectangle, it resizes vertically and maintains proportional width to squares
+                            if (dragging.type === 'resize-tl') {
+                                const newHeight = box.y + box.height - mouseY;
+                                if (newHeight > 50) {
+                                    box.y = box.y + box.height - newHeight;
+                                    box.height = newHeight;
+                                    newBoxes = syncBoxSize(dragging.index, box.width);
+                                }
+                            } else if (dragging.type === 'resize-tr') {
+                                const newHeight = box.y + box.height - mouseY;
+                                if (newHeight > 50) {
+                                    box.y = box.y + box.height - newHeight;
+                                    box.height = newHeight;
+                                    newBoxes = syncBoxSize(dragging.index, box.width);
+                                }
+                            } else if (dragging.type === 'resize-bl') {
+                                const newHeight = mouseY - box.y;
+                                if (newHeight > 50) {
+                                    box.height = newHeight;
+                                    newBoxes = syncBoxSize(dragging.index, box.width);
+                                }
+                            } else if (dragging.type === 'resize-br') {
+                                const newHeight = mouseY - box.y;
+                                if (newHeight > 50) {
+                                    box.height = newHeight;
+                                    newBoxes = syncBoxSize(dragging.index, box.width);
+                                }
+                            }
                         }
                     }
                 }
@@ -654,7 +804,7 @@
                         <div className="header">
                             <div className="logo">⚡ VIBE REEL</div>
                             <h1>Video Cut Rectangle Tool</h1>
-                            <div className="subtitle">Manual rectangle positioning → 1 cut (1080×1920) or 2 cuts (1080×960 each)</div>
+                            <div className="subtitle">Manual rectangle positioning → 1 cut (1080×1920) | 2 cuts (1080×960 each) | 3 cuts (2 squares + rectangle)</div>
                         </div>
 
                     {!video && (
@@ -677,6 +827,13 @@
                                         >
                                             2 Cuts (1080×960 each)
                                         </button>
+                                        <button
+                                            className={`detect-btn ${cutMode === 3 ? 'active' : ''}`}
+                                            onClick={() => setCutMode(3)}
+                                            style={{padding: '8px 20px', fontSize: '12px'}}
+                                        >
+                                            3 Cuts (2 squares + rectangle)
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -685,7 +842,7 @@
                                 <strong>🎯 How it works:</strong><br/>
                                 1. Choose cut mode (1 or 2 rectangles) → Upload video<br/>
                                 2. Add rectangles manually → Drag to reposition | Drag corners to resize<br/>
-                                3. <strong>{cutMode === 1 ? '1 rectangle (1080×1920)' : '2 rectangles (1080×960 each)'}</strong><br/>
+                                3. <strong>{cutMode === 1 ? '1 rectangle (1080×1920)' : cutMode === 2 ? '2 rectangles (1080×960 each)' : '2 squares + 1 rectangle (total height: 1920)'}</strong><br/>
                                 4. Copy FFmpeg commands → Perfect for vertical reels
                             </div>
                             
@@ -730,7 +887,7 @@
                                         <button
                                             className="detect-btn"
                                             onClick={addRectangle}
-                                            disabled={cutMode === 1 ? boxes.length >= 1 : boxes.length >= 2}
+                                            disabled={cutMode === 1 ? boxes.length >= 1 : cutMode === 2 ? boxes.length >= 2 : boxes.length >= 3}
                                             style={{padding: '8px 20px', fontSize: '12px'}}
                                         >
                                             ➕ Add Rectangle
@@ -770,7 +927,12 @@
                             
                             {boxes.length > 0 && (
                                 <div className="help-text">
-                                    ✨ Drag to move | Drag corners to resize <span className="sync-badge">{cutMode === 1 ? '1080×1920' : '1080×960'}</span> {cutMode === 2 && boxes.length > 1 && <span className="sync-badge">Both boxes resize together</span>}
+                                    ✨ Drag to move | Drag corners to resize
+                                    {cutMode === 1 && <span className="sync-badge">1080×1920</span>}
+                                    {cutMode === 2 && <span className="sync-badge">1080×960</span>}
+                                    {cutMode === 3 && <span className="sync-badge">Squares: 1:1 | Rectangle: Auto-calculated</span>}
+                                    {cutMode === 2 && boxes.length > 1 && <span className="sync-badge">Both boxes resize together</span>}
+                                    {cutMode === 3 && boxes.length > 1 && <span className="sync-badge">All shapes sync | Total height: 1920px</span>}
                                 </div>
                             )}
 
@@ -779,9 +941,11 @@
                                     {boxes.map(box => (
                                         <div key={box.id} className="participant-card">
                                             <div className="participant-id">
-                                                Cut {box.id}
+                                                {cutMode === 3 ? (box.type === 'square' ? `Square ${box.id}` : 'Rectangle') : `Cut ${box.id}`}
                                                 {cutMode === 2 && boxes.length > 1 && <span className="sync-badge">SYNCED SIZE</span>}
                                                 {cutMode === 1 && <span className="sync-badge">FULL REEL</span>}
+                                                {cutMode === 3 && box.type === 'square' && <span className="sync-badge">1:1 RATIO</span>}
+                                                {cutMode === 3 && box.type === 'rectangle' && <span className="sync-badge">AUTO-HEIGHT</span>}
                                             </div>
                                             <div className="coord-value">Position: ({box.x}, {box.y})</div>
                                             <div className="coord-value">Size: {box.width} × {box.height}</div>
@@ -800,7 +964,7 @@
                                         </div>
                                     ))}
                                     
-                                    {boxes.length === 2 && (
+                                    {boxes.length === 2 && cutMode === 2 && (
                                         <div className="participant-card" style={{gridColumn: '1 / -1', background: 'var(--bg-input)', borderColor: 'var(--accent-green)'}}>
                                             <div className="participant-id" style={{color: 'var(--accent-green)'}}>
                                                 📚 Merge Both Cuts
@@ -811,6 +975,25 @@
                                                     className="copy-btn" 
                                                     onClick={() => navigator.clipboard.writeText(
                                                         `zsh -lc 'source ~/.zshrc; rm -rf merged.mp4; ffmpeg -i cut1.mp4 -i cut2.mp4 -filter_complex "[0:v][1:v]vstack=inputs=2[v]" -map "[v]" -map "0:a?" merged.mp4'`
+                                                    )}
+                                                >
+                                                    Copy
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {boxes.length === 3 && cutMode === 3 && (
+                                        <div className="participant-card" style={{gridColumn: '1 / -1', background: 'var(--bg-input)', borderColor: 'var(--accent-green)'}}>
+                                            <div className="participant-id" style={{color: 'var(--accent-green)'}}>
+                                                🎬 Merge All Three Cuts
+                                            </div>
+                                            <div className="ffmpeg-command">
+                                                <div className="ffmpeg-code">zsh -lc 'source ~/.zshrc; rm -rf merged_3cut.mp4; ffmpeg -i cut1.mp4 -i cut2.mp4 -i cut3.mp4 -filter_complex \"[0:v][1:v]hstack=inputs=2[squares];[squares][2:v]vstack=inputs=2[v]\" -map \"[v]\" -map \"0:a?\" merged_3cut.mp4'</div>
+                                                <button
+                                                    className="copy-btn"
+                                                    onClick={() => navigator.clipboard.writeText(
+                                                        `zsh -lc 'source ~/.zshrc; rm -rf merged_3cut.mp4; ffmpeg -i cut1.mp4 -i cut2.mp4 -i cut3.mp4 -filter_complex \"[0:v][1:v]hstack=inputs=2[squares];[squares][2:v]vstack=inputs=2[v]\" -map \"[v]\" -map \"0:a?\" merged_3cut.mp4'`
                                                     )}
                                                 >
                                                     Copy
