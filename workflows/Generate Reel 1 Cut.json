@@ -1,15 +1,15 @@
 {
-  "name": "Generate Reel",
+  "name": "Generate Reel - 1 Cut",
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -496,
-        -192
+        -80,
+        -176
       ],
-      "id": "1ad51777-23c9-4d97-a333-171626e1b7f1",
+      "id": "851680de-0de7-44e0-81da-5dc1ffea8d69",
       "name": "When clicking ‘Execute workflow’"
     },
     {
@@ -21,18 +21,17 @@
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        -48,
-        -192
+        368,
+        -176
       ],
-      "id": "06f03584-337b-49ee-aed6-6fc2a770af5b",
+      "id": "4f8cdca2-60eb-4c85-ba35-98365eaa7b78",
       "name": "Generate Transcript",
       "credentials": {
         "sshPrivateKey": {
           "id": "IkkggOWpFByQpMbn",
           "name": "SSH Password account"
         }
-      },
-      "disabled": true
+      }
     },
     {
       "parameters": {
@@ -42,10 +41,10 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        176,
-        -192
+        592,
+        -176
       ],
-      "id": "f79ee27d-5952-439f-a521-225e24d5daa1",
+      "id": "8e9a3376-6f40-4123-a432-1ccaf9d4f2fa",
       "name": "Get Transcript"
     },
     {
@@ -57,10 +56,10 @@
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        -272,
-        -192
+        144,
+        -176
       ],
-      "id": "c4f2e275-474f-445f-b4ec-26debddaebfb",
+      "id": "e629b2f1-8f90-45bb-ae42-ceee9db56be5",
       "name": "Compress Video",
       "credentials": {
         "sshPrivateKey": {
@@ -79,10 +78,10 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        1072,
-        -192
+        1488,
+        -176
       ],
-      "id": "59e3eeba-97e1-4428-b150-55daf18a8bfb",
+      "id": "30025ca6-f05b-4399-854b-f974751515e8",
       "name": "Read/Write Files from Disk"
     },
     {
@@ -94,25 +93,25 @@
       "type": "n8n-nodes-base.convertToFile",
       "typeVersion": 1.1,
       "position": [
-        848,
-        -192
+        1264,
+        -176
       ],
-      "id": "7815fd62-6e18-4084-bb5c-0eb7005d621b",
+      "id": "706d04cf-e144-42ca-91b3-d315fbf630df",
       "name": "Convert to File"
     },
     {
       "parameters": {
         "authentication": "privateKey",
-        "command": "=zsh -lc 'source ~/.zshrc; rm -rf reel.mp4; ffmpeg -i merged.mp4 \\\n-vf \"subtitles=transcript.ass\" \\\n-c:a copy \\\nreel.mp4'",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf reel.mp4; ffmpeg -i cut1.mp4 \\\n-vf \"subtitles=transcript.ass\" \\\n-c:a copy \\\nreel.mp4'",
         "cwd": "/tmp/videos"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        1968,
-        -192
+        1936,
+        -176
       ],
-      "id": "3b07a13b-9566-40e7-b154-67ee509dd33d",
+      "id": "8f5b2c26-2e87-40e9-9e31-9c206159d72b",
       "name": "Burn Subtitles",
       "credentials": {
         "sshPrivateKey": {
@@ -128,68 +127,26 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        624,
-        -192
+        1040,
+        -176
       ],
-      "id": "0155f51e-42a9-4e7d-8ef4-4bb55179c05a",
+      "id": "e65271a8-9b8c-4e4e-8734-0b24a076c221",
       "name": "JSON to ASS Convertor"
     },
     {
       "parameters": {
         "authentication": "privateKey",
-        "command": "=zsh -lc 'source ~/.zshrc; rm -rf cut1.mp4; ffmpeg -i video.mp4 -vf \"crop=588.7294117647058:523.3150326797385:60.51764705882351:631.2239079233881\" -c:v libx264 -crf 18 -preset medium -c:a copy cut1.mp4'",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf cut1.mp4; ffmpeg -i video.mp4 -vf \"crop=911.2235294117643:1619.9529411764697:1383.8117647058828:65.78840886574653\" -c:v libx264 -crf 18 -preset medium -c:a copy cut1.mp4'",
         "cwd": "/tmp/videos"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        1296,
-        -192
+        1712,
+        -176
       ],
-      "id": "7a9144e6-ff02-4a84-ace8-bcb2f6362a4b",
+      "id": "a0e1a4db-0f67-40ca-8ad7-83f13da06b23",
       "name": "Cut 1",
-      "credentials": {
-        "sshPrivateKey": {
-          "id": "IkkggOWpFByQpMbn",
-          "name": "SSH Password account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "authentication": "privateKey",
-        "command": "=zsh -lc 'source ~/.zshrc; rm -rf cut2.mp4; ffmpeg -i video.mp4 -vf \"crop=588.7294117647058:523.3150326797385:1970.6352941176467:570.1172999155665\" -c:v libx264 -crf 18 -preset medium -c:a copy cut2.mp4'",
-        "cwd": "/tmp/videos"
-      },
-      "type": "n8n-nodes-base.ssh",
-      "typeVersion": 1,
-      "position": [
-        1520,
-        -192
-      ],
-      "id": "df61eb3c-8db1-4d5c-835e-308e05f6d563",
-      "name": "Cut 2",
-      "credentials": {
-        "sshPrivateKey": {
-          "id": "IkkggOWpFByQpMbn",
-          "name": "SSH Password account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "authentication": "privateKey",
-        "command": "zsh -lc 'source ~/.zshrc; rm -rf merged.mp4; ffmpeg -i cut1.mp4 -i cut2.mp4 \\\n-filter_complex \"[0:v][1:v]vstack=inputs=2[v]\" \\\n-map \"[v]\" -map \"0:a?\" \\\nmerged.mp4'",
-        "cwd": "/tmp/videos"
-      },
-      "type": "n8n-nodes-base.ssh",
-      "typeVersion": 1,
-      "position": [
-        1744,
-        -192
-      ],
-      "id": "b8cc94c7-293c-4bd0-984e-17c2f22fbffa",
-      "name": "Merge Cut 1 & 2",
       "credentials": {
         "sshPrivateKey": {
           "id": "IkkggOWpFByQpMbn",
@@ -205,10 +162,10 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
       "position": [
-        400,
-        -192
+        816,
+        -176
       ],
-      "id": "2c9f7f01-7dc1-49cc-aab1-e25fdadd64b4",
+      "id": "173ec9ca-f2ba-4791-903c-47dd7f61a21d",
       "name": "Extract from File"
     }
   ],
@@ -295,28 +252,6 @@
       "main": [
         [
           {
-            "node": "Cut 2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Cut 2": {
-      "main": [
-        [
-          {
-            "node": "Merge Cut 1 & 2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge Cut 1 & 2": {
-      "main": [
-        [
-          {
             "node": "Burn Subtitles",
             "type": "main",
             "index": 0
@@ -340,11 +275,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "f0fd1449-62f1-4b2b-890d-fc07637c5723",
+  "versionId": "a591ef26-20af-4807-8729-9942660ffcf9",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "1ef27c04422232ed4131fcf36b4f5d8f8efff3c9b6a102a2529f396587e22c55"
   },
-  "id": "bZQix2X1XRIrSASF",
+  "id": "CfmIIaE92U60WHox",
   "tags": []
 }
