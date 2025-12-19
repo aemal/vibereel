@@ -1,0 +1,402 @@
+{
+  "name": "Generate Reel - 3 Cuts",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        240
+      ],
+      "id": "5211752d-ded9-403b-bf85-06793636bbac",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "zsh -lc 'source ~/.zshrc; whisper video.mp4 --model medium --output_format json --word_timestamps True --verbose False'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        432,
+        240
+      ],
+      "id": "353c88e2-0ca8-4ac5-8bb2-51d01deb8654",
+      "name": "Generate Transcript",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/video.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        656,
+        240
+      ],
+      "id": "42573492-ebb9-4407-ab39-edad9074ded1",
+      "name": "Get Transcript"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "zsh -lc 'source ~/.zshrc; compress video.mov'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        208,
+        240
+      ],
+      "id": "01a00584-881c-432e-a965-b3e6d71c25ef",
+      "name": "Compress Video",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/home/node/.n8n-files/transcript.ass",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        240
+      ],
+      "id": "ef5a81f1-01ae-4563-88d6-5464a58e53d6",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "processed.exportFormats.ass",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        240
+      ],
+      "id": "47a35ed8-17b3-4a87-a27c-18dd712280dc",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf reel.mp4; ffmpeg -i merged.mp4 \\\n-vf \"subtitles=transcript.ass\" \\\n-c:a copy \\\nreel.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        240
+      ],
+      "id": "789091b1-3e60-4f3e-bee4-f3f00205f651",
+      "name": "Burn Subtitles",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node - Whisper Transcription Data Processor\n// Processes Whisper API transcription output with segments and word-level timing\n// Compatible with n8n workflow automation\n\n// Get input data from n8n\nconst items = $input.all();\n\nfunction processTranscriptionData(data) {\n  // Extract main text\n  const fullText = data.text || '';\n\n  // Process segments\n  const segments = (data.segments || []).map((segment, index) => {\n    return {\n      id: segment.id || index,\n      startTime: segment.start || 0,\n      endTime: segment.end || 0,\n      duration: (segment.end || 0) - (segment.start || 0),\n      text: segment.text || '',\n\n      // Include word-level data for karaoke subtitles (preserve original structure)\n      words: segment.words || [],\n\n      // Confidence metrics\n      avgLogProb: segment.avg_logprob || 0,\n      noSpeechProb: segment.no_speech_prob || 0,\n      temperature: segment.temperature || 0,\n      compressionRatio: segment.compression_ratio || 0,\n\n      // Word count and timing analysis\n      wordCount: (segment.words || []).length,\n      wordsPerSecond: segment.words ?\n        segment.words.length / ((segment.end || 0) - (segment.start || 0) || 1) : 0,\n\n      // Extract high-confidence words (probability > 0.8)\n      highConfidenceWords: (segment.words || []).filter(word =>\n        (word.probability || 0) > 0.8\n      ).map(word => word.word).join(' '),\n\n      // Extract low-confidence words (probability < 0.5) for review\n      lowConfidenceWords: (segment.words || []).filter(word =>\n        (word.probability || 0) < 0.5\n      ).map(word => ({\n        word: word.word,\n        probability: word.probability,\n        start: word.start,\n        end: word.end\n      }))\n    };\n  });\n\n  // Generate summary statistics\n  const stats = {\n    totalDuration: segments.length > 0 ?\n      Math.max(...segments.map(s => s.endTime)) : 0,\n    totalSegments: segments.length,\n    totalWords: segments.reduce((sum, seg) => sum + seg.wordCount, 0),\n    averageConfidence: segments.length > 0 ?\n      segments.reduce((sum, seg) => sum + Math.abs(seg.avgLogProb), 0) / segments.length : 0,\n    languageDetected: data.language || 'unknown',\n\n    // Identify segments with potential issues\n    lowConfidenceSegments: segments.filter(seg => seg.avgLogProb < -0.5).length,\n    highNoSpeechSegments: segments.filter(seg => seg.noSpeechProb > 0.1).length\n  };\n\n  // Extract timestamps for easy navigation\n  const timeMarkers = segments.map(segment => ({\n    segmentId: segment.id,\n    timestamp: segment.startTime,\n    text: segment.text.substring(0, 50) + (segment.text.length > 50 ? '...' : ''),\n    confidence: Math.abs(segment.avgLogProb)\n  }));\n\n  // Generate cleaned transcript (remove filler words, fix spacing) - optimized\n  const cleanedText = fullText.length > 100000 ?\n    fullText.replace(/\\s+/g, ' ').trim() : // Skip expensive regex for very large texts\n    fullText\n      .replace(/\\s+/g, ' ')  // Multiple spaces to single\n      .replace(/\\b(um|uh|er|ah)\\b/gi, '')  // Remove common filler words\n      .replace(/\\s+/g, ' ')  // Clean up spaces after filler removal\n      .trim();\n\n  // Split into paragraphs based on longer pauses (gaps > 2 seconds)\n  const paragraphs = [];\n  let currentParagraph = [];\n\n  for (let i = 0; i < segments.length; i++) {\n    const currentSegment = segments[i];\n    const nextSegment = segments[i + 1];\n\n    currentParagraph.push(currentSegment.text.trim());\n\n    // End paragraph if there's a significant pause or it's the last segment\n    if (!nextSegment || (nextSegment.startTime - currentSegment.endTime) > 2) {\n      if (currentParagraph.length > 0) {\n        paragraphs.push(currentParagraph.join(' ').trim());\n        currentParagraph = [];\n      }\n    }\n  }\n\n  return {\n    // Original data\n    originalText: fullText,\n    language: data.language,\n\n    // Processed data\n    cleanedText,\n    paragraphs,\n    segments,\n\n    // Analytics\n    statistics: stats,\n    timeMarkers,\n\n    // For further processing\n    exportFormats: {\n      srt: generateSRT(segments),\n      vtt: generateVTT(segments),\n      ass: generateASS(segments),\n      plainText: cleanedText,\n      wordTimings: extractWordTimings(segments)\n    }\n  };\n}\n\n// Generate SRT subtitle format\nfunction generateSRT(segments) {\n  return segments.map((segment, index) => {\n    const startTime = formatTime(segment.startTime);\n    const endTime = formatTime(segment.endTime);\n    return `${index + 1}\\n${startTime} --> ${endTime}\\n${segment.text.trim()}\\n`;\n  }).join('\\n');\n}\n\n// Generate WebVTT subtitle format\nfunction generateVTT(segments) {\n  const vttHeader = 'WEBVTT\\n\\n';\n  const vttContent = segments.map((segment, index) => {\n    const startTime = formatTime(segment.startTime, true);\n    const endTime = formatTime(segment.endTime, true);\n    return `${startTime} --> ${endTime}\\n${segment.text.trim()}\\n`;\n  }).join('\\n');\n  return vttHeader + vttContent;\n}\n\n// Generate ASS subtitle format with karaoke-style word-by-word timing - memory optimized\nfunction generateASS(segments) {\n  const assHeader = `[Script Info]\nTitle: Karaoke Subtitles\nScriptType: v4.00+\nWrapStyle: 0\nScaledBorderAndShadow: yes\nYCbCr Matrix: TV.601\nPlayResX: 1920\nPlayResY: 1080\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Arial,84,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,4,2,50,50,${$('When clicking ‘Execute workflow’').first().json.subTitlePosition},1\nStyle: Karaoke,Arial,84,&H0000FFFF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,4,2,50,50,${$('When clicking ‘Execute workflow’').first().json.subTitlePosition},1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;\n\n  // Ensure we have segments to process\n  if (!segments || segments.length === 0) {\n    return assHeader + 'Dialogue: 0,0:00:00.00,0:00:01.00,Karaoke,,0,0,0,,No data available\\n';\n  }\n\n  const assEvents = [];\n  const MAX_EVENTS = 5000; // Prevent memory overflow\n  let eventCount = 0;\n\n  for (const segment of segments) {\n    if (eventCount >= MAX_EVENTS) break;\n\n    if (segment.words && segment.words.length > 0) {\n      // Create karaoke-style word-by-word events using word-level timing\n      for (const word of segment.words) {\n        if (eventCount >= MAX_EVENTS) break;\n\n        const startTime = formatASSTime(word.start || segment.startTime || segment.start || 0);\n        const endTime = formatASSTime(word.end || segment.endTime || segment.end || 0);\n        const cleanWord = (word.word || '').trim().replace(/\\n/g, '\\\\N');\n\n        if (cleanWord) {\n          assEvents.push(`Dialogue: 0,${startTime},${endTime},Karaoke,,0,0,0,,${cleanWord}`);\n          eventCount++;\n        }\n      }\n    } else if (segment.text) {\n      // Fallback: split text by words if no word-level timing available\n      const words = segment.text.trim().split(/\\s+/);\n      const segmentDuration = (segment.endTime || segment.end || 0) - (segment.startTime || segment.start || 0);\n      const timePerWord = segmentDuration > 0 ? segmentDuration / words.length : 1;\n\n      for (let index = 0; index < words.length && eventCount < MAX_EVENTS; index++) {\n        const word = words[index];\n        const wordStart = (segment.startTime || segment.start || 0) + (index * timePerWord);\n        const wordEnd = (segment.startTime || segment.start || 0) + ((index + 1) * timePerWord);\n        const startTime = formatASSTime(wordStart);\n        const endTime = formatASSTime(wordEnd);\n        const cleanWord = word.replace(/\\n/g, '\\\\N');\n\n        if (cleanWord) {\n          assEvents.push(`Dialogue: 0,${startTime},${endTime},Karaoke,,0,0,0,,${cleanWord}`);\n          eventCount++;\n        }\n      }\n    }\n  }\n\n  // Ensure we have at least some content\n  if (assEvents.length === 0) {\n    assEvents.push('Dialogue: 0,0:00:00.00,0:00:01.00,Karaoke,,0,0,0,,Processing error - no dialogue generated');\n  }\n\n  return assHeader + assEvents.join('\\n');\n}\n\n// Format time for ASS subtitles (H:MM:SS.cc)\nfunction formatASSTime(seconds) {\n  const hours = Math.floor(seconds / 3600);\n  const minutes = Math.floor((seconds % 3600) / 60);\n  const secs = Math.floor(seconds % 60);\n  const centiseconds = Math.floor((seconds % 1) * 100);\n\n  return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;\n}\n\n// Format time for subtitles (HH:MM:SS,mmm for SRT, HH:MM:SS.mmm for VTT)\nfunction formatTime(seconds, isVTT = false) {\n  const hours = Math.floor(seconds / 3600);\n  const minutes = Math.floor((seconds % 3600) / 60);\n  const secs = Math.floor(seconds % 60);\n  const ms = Math.floor((seconds % 1) * 1000);\n\n  const separator = isVTT ? '.' : ',';\n  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}${separator}${ms.toString().padStart(3, '0')}`;\n}\n\n// Extract word-level timings with memory optimization\nfunction extractWordTimings(segments) {\n  const MAX_WORDS = 10000; // Prevent memory overflow\n  const wordTimings = [];\n  let wordCount = 0;\n\n  for (const segment of segments) {\n    if (segment.words) {\n      for (const word of segment.words) {\n        if (wordCount >= MAX_WORDS) break;\n\n        wordTimings.push({\n          word: word.word?.trim(),\n          start: word.start,\n          end: word.end,\n          duration: (word.end || 0) - (word.start || 0),\n          probability: word.probability,\n          segmentId: segment.id\n        });\n        wordCount++;\n      }\n    }\n    if (wordCount >= MAX_WORDS) break;\n  }\n\n  return wordTimings;\n}\n\n// Process all input items for n8n - memory optimized with batching\nfunction processItemsBatched(items, batchSize = 10) {\n  const processedItems = [];\n  const startTime = Date.now();\n\n  for (let i = 0; i < items.length; i += batchSize) {\n    const batch = items.slice(i, i + batchSize);\n\n    const batchResults = batch.map(item => {\n      try {\n        // Handle different input structures\n        let transcriptionData;\n\n        // Check if data is in binary format first\n        if (item.binary && item.binary.data) {\n          // If it's binary data, try to parse it\n          try {\n            const binaryData = item.binary.data;\n            transcriptionData = JSON.parse(binaryData);\n          } catch (e) {\n            console.log('Failed to parse binary data:', e);\n            transcriptionData = item.json || item;\n          }\n        } else if (item.json) {\n          // Extract data directly from n8n json structure\n          transcriptionData = item.json.data || item.json;\n        } else {\n          transcriptionData = item;\n        }\n\n        // Handle array structure from file input (like video.json)\n        if (Array.isArray(transcriptionData) && transcriptionData.length > 0) {\n          // Extract the data object from the first array element\n          transcriptionData = transcriptionData[0].data || transcriptionData[0];\n        }\n\n        // Process the transcription data\n        const processed = processTranscriptionData(transcriptionData);\n\n        return {\n          json: {\n            success: true,\n            processed: processed,\n            metadata: {\n              processedAt: new Date().toISOString(),\n              processingTime: Date.now() - startTime,\n              inputType: 'whisper-transcription',\n              batchIndex: Math.floor(i / batchSize)\n            }\n          }\n        };\n\n      } catch (error) {\n        return {\n          json: {\n            success: false,\n            error: error.message,\n            originalData: null, // Don't store original data to save memory\n            metadata: {\n              processedAt: new Date().toISOString(),\n              inputType: 'error',\n              batchIndex: Math.floor(i / batchSize)\n            }\n          }\n        };\n      }\n    });\n\n    processedItems.push(...batchResults);\n\n    // Force garbage collection hint between batches for large datasets\n    if (items.length > 100 && i % 50 === 0) {\n      // Allow event loop to process other tasks\n      if (typeof setImmediate !== 'undefined') {\n        setImmediate(() => {});\n      }\n    }\n  }\n\n  return processedItems;\n}\n\n// Process items with memory optimization\nconst processedItems = processItemsBatched(items);\n\n// Return processed items for n8n\nreturn processedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        240
+      ],
+      "id": "41bf37c3-16fc-42f4-930f-fca47fc04fd0",
+      "name": "JSON to ASS Convertor"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf cut1.mp4; ffmpeg -i video.mp4 -vf \"crop=426.9714285714284:426.9714285714284:888.6857142857144:291.82857142857137\" -c:v libx264 -crf 18 -preset medium -c:a copy cut1.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        240
+      ],
+      "id": "2c88853b-0b0e-4b6a-8fc5-d20d45bc3ae7",
+      "name": "Cut 1",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf cut2.mp4; ffmpeg -i video.mp4 -vf \"crop=426.9714285714284:426.9714285714284:1281.8285714285714:222.34285714285716\" -c:v libx264 -crf 18 -preset medium -c:a copy cut2.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        240
+      ],
+      "id": "78f71ee9-641e-4bc6-a9db-31d17e2dcb5d",
+      "name": "Cut 2",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        240
+      ],
+      "id": "f7b0518f-48c2-4560-9ad4-aae66dbcd87d",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "content": "## AHA NOTE: \n### Change for Abstraction\nDifferent values between 1 Cut and 2 Cuts\n",
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "fab0f71a-67df-4791-9bd2-6261189948f1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf cut3.mp4; ffmpeg -i video.mp4 -vf \"crop=853.9428571428568:1066:71.94285714285724:14\" -c:v libx264 -crf 18 -preset medium -c:a copy cut3.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        240
+      ],
+      "id": "8937a72c-a84e-47c9-9eb8-7242dba04b24",
+      "name": "Cut 3",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=zsh -lc 'source ~/.zshrc; rm -rf merged.mp4; rm -f merged.mp4 && \\\nffmpeg -i cut1.mp4 -i cut2.mp4 -i cut3.mp4 \\\n-filter_complex \"[0:v][1:v]hstack=inputs=2[top];[2:v]scale=852:-1[bottom];[top][bottom]vstack=inputs=2[v]\" \\\n-map \"[v]\" -map 0:a \\\n-c:v libx264 -crf 18 -preset veryfast merged.mp4'",
+        "cwd": "/tmp/videos"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2448,
+        240
+      ],
+      "id": "b2e26783-e3f4-469b-8b92-d1aa722842d8",
+      "name": "Merge Cut 1, 2 & 3",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "IkkggOWpFByQpMbn",
+          "name": "SSH Password account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "subTitlePosition": 50
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Compress Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Transcript": {
+      "main": [
+        [
+          {
+            "node": "Get Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Transcript": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compress Video": {
+      "main": [
+        [
+          {
+            "node": "Generate Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Cut 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSON to ASS Convertor": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cut 1": {
+      "main": [
+        [
+          {
+            "node": "Cut 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cut 2": {
+      "main": [
+        [
+          {
+            "node": "Cut 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "JSON to ASS Convertor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cut 3": {
+      "main": [
+        [
+          {
+            "node": "Merge Cut 1, 2 & 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Cut 1, 2 & 3": {
+      "main": [
+        [
+          {
+            "node": "Burn Subtitles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0c96ca52-5a54-4091-95bd-b90e4128c720",
+  "meta": {
+    "instanceId": "1ef27c04422232ed4131fcf36b4f5d8f8efff3c9b6a102a2529f396587e22c55"
+  },
+  "id": "UrxMzl5jgL235I5N",
+  "tags": []
+}
