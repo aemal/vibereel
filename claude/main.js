@@ -18,7 +18,7 @@ function processTranscriptionData(data) {
       duration: (segment.end || 0) - (segment.start || 0),
       text: segment.text || '',
 
-      // Include word-level data for karaoke subtitles
+      // Include word-level data for karaoke subtitles (preserve original structure)
       words: segment.words || [],
 
       // Confidence metrics
@@ -116,7 +116,7 @@ function processTranscriptionData(data) {
     exportFormats: {
       srt: generateSRT(segments),
       vtt: generateVTT(segments),
-      ass: generateASS(segments),
+      ass: generateASS(data.segments || []),
       plainText: cleanedText,
       wordTimings: extractWordTimings(data.segments || [])
     }
@@ -165,27 +165,32 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
   const assEvents = [];
 
+  // Ensure we have segments to process
+  if (!segments || segments.length === 0) {
+    return assHeader + 'Dialogue: 0,0:00:00.00,0:00:01.00,Karaoke,,0,0,0,,No data available\n';
+  }
+
   segments.forEach(segment => {
     if (segment.words && segment.words.length > 0) {
-      // Create karaoke-style word-by-word events
+      // Create karaoke-style word-by-word events using word-level timing
       segment.words.forEach(word => {
-        const startTime = formatASSTime(word.start || segment.startTime);
-        const endTime = formatASSTime(word.end || segment.endTime);
+        const startTime = formatASSTime(word.start || segment.start || 0);
+        const endTime = formatASSTime(word.end || segment.end || 0);
         const cleanWord = (word.word || '').trim().replace(/\n/g, '\\N');
 
         if (cleanWord) {
           assEvents.push(`Dialogue: 0,${startTime},${endTime},Karaoke,,0,0,0,,${cleanWord}`);
         }
       });
-    } else {
+    } else if (segment.text) {
       // Fallback: split text by words if no word-level timing available
       const words = segment.text.trim().split(/\s+/);
-      const segmentDuration = segment.endTime - segment.startTime;
-      const timePerWord = segmentDuration / words.length;
+      const segmentDuration = (segment.end || 0) - (segment.start || 0);
+      const timePerWord = segmentDuration > 0 ? segmentDuration / words.length : 1;
 
       words.forEach((word, index) => {
-        const wordStart = segment.startTime + (index * timePerWord);
-        const wordEnd = segment.startTime + ((index + 1) * timePerWord);
+        const wordStart = (segment.start || 0) + (index * timePerWord);
+        const wordEnd = (segment.start || 0) + ((index + 1) * timePerWord);
         const startTime = formatASSTime(wordStart);
         const endTime = formatASSTime(wordEnd);
         const cleanWord = word.replace(/\n/g, '\\N');
@@ -196,6 +201,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
       });
     }
   });
+
+  // Ensure we have at least some content
+  if (assEvents.length === 0) {
+    assEvents.push('Dialogue: 0,0:00:00.00,0:00:01.00,Karaoke,,0,0,0,,Processing error - no dialogue generated');
+  }
 
   return assHeader + assEvents.join('\n');
 }
@@ -260,9 +270,16 @@ const processedItems = items.map(item => {
         transcriptionData = item.json || item;
       }
     } else if (item.json) {
-      transcriptionData = item.json;
+      // Extract data directly from n8n json structure
+      transcriptionData = item.json.data || item.json;
     } else {
       transcriptionData = item;
+    }
+
+    // Handle array structure from file input (like video.json)
+    if (Array.isArray(transcriptionData) && transcriptionData.length > 0) {
+      // Extract the data object from the first array element
+      transcriptionData = transcriptionData[0].data || transcriptionData[0];
     }
 
     // Process the transcription data
