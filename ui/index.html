@@ -123,6 +123,54 @@
             margin: 20px 0;
             font-size: 13px;
         }
+
+        .subtitle-preview {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 356px; /* 200 * (16/9) = 355.56 ≈ 356 for 9:16 aspect ratio */
+            background: #000;
+            border: 2px solid var(--accent-cyan);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .subtitle-placeholder {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            height: 40px;
+            background: rgba(0, 217, 255, 0.8);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: ns-resize;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--bg-dark);
+            user-select: none;
+            transition: background 0.2s ease;
+        }
+
+        .subtitle-placeholder:hover {
+            background: rgba(0, 217, 255, 1);
+        }
+
+        .subtitle-placeholder.dragging {
+            background: var(--accent-green);
+        }
+
+        .subtitle-preview-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            font-size: 12px;
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -141,6 +189,8 @@
             const [dragging, setDragging] = useState(null);
             const [videoFrame, setVideoFrame] = useState(null);
             const [dragOver, setDragOver] = useState(false);
+            const [subtitlePosition, setSubtitlePosition] = useState(700); // Vertical position in pixels from bottom for ASS subtitles
+            const [subtitleDragging, setSubtitleDragging] = useState(false);
             
             const fileInputRef = useRef(null);
             const videoRef = useRef(null);
@@ -490,6 +540,62 @@
                 setDragging(null);
             };
 
+            // Subtitle dragging functions
+            const handleSubtitleMouseDown = (e) => {
+                e.preventDefault();
+                setSubtitleDragging(true);
+            };
+
+            const handleSubtitleMouseMove = (e) => {
+                if (!subtitleDragging) return;
+
+                const previewBox = e.currentTarget.closest('.subtitle-preview');
+                const rect = previewBox.getBoundingClientRect();
+                const relativeY = e.clientY - rect.top;
+                const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
+
+                // Convert to pixels from bottom for ASS subtitles (1080px height)
+                // Bottom of screen = 50px, Top of screen = 1050px
+                const pixelsFromBottom = Math.round((1 - percentage / 100) * 1000) + 50;
+                setSubtitlePosition(pixelsFromBottom);
+            };
+
+            const handleSubtitleMouseUp = () => {
+                setSubtitleDragging(false);
+            };
+
+            // Global mouse events for subtitle dragging
+            useEffect(() => {
+                if (subtitleDragging) {
+                    const handleGlobalMouseMove = (e) => {
+                        const previewBoxes = document.querySelectorAll('.subtitle-preview');
+                        if (previewBoxes.length > 0) {
+                            const previewBox = previewBoxes[0];
+                            const rect = previewBox.getBoundingClientRect();
+                            const relativeY = e.clientY - rect.top;
+                            const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
+
+                            // Convert to pixels from bottom for ASS subtitles (1080px height)
+                            // Bottom of screen = 50px, Top of screen = 1050px
+                            const pixelsFromBottom = Math.round((1 - percentage / 100) * 1000) + 50;
+                            setSubtitlePosition(pixelsFromBottom);
+                        }
+                    };
+
+                    const handleGlobalMouseUp = () => {
+                        setSubtitleDragging(false);
+                    };
+
+                    document.addEventListener('mousemove', handleGlobalMouseMove);
+                    document.addEventListener('mouseup', handleGlobalMouseUp);
+
+                    return () => {
+                        document.removeEventListener('mousemove', handleGlobalMouseMove);
+                        document.removeEventListener('mouseup', handleGlobalMouseUp);
+                    };
+                }
+            }, [subtitleDragging]);
+
             return (
                 <div className="container">
                     <div className="header">
@@ -663,6 +769,18 @@
                             )}
                         </>
                     )}
+
+                    {/* Subtitle Position Preview */}
+                    <div className="subtitle-preview">
+                        <div className="subtitle-preview-label">Subtitle Position (Pixels from Bottom)</div>
+                        <div
+                            className={`subtitle-placeholder ${subtitleDragging ? 'dragging' : ''}`}
+                            style={{ top: `calc(${(1 - (subtitlePosition - 50) / 1000) * 100}% - 20px)` }}
+                            onMouseDown={handleSubtitleMouseDown}
+                        >
+                            {subtitlePosition}
+                        </div>
+                    </div>
                 </div>
             );
         }
