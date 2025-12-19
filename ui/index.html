@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Detection Frame Detector - Vibe Reel</title>
+    <title>Video Cut Rectangle Tool - Vibe Reel</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -61,8 +60,10 @@
         .control-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; }
         .time-input { width: 100%; padding: 12px 15px; background: var(--bg-input); border: 2px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 14px; }
         
-        .detect-btn { padding: 14px 40px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green)); border: none; border-radius: 8px; color: var(--bg-dark); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-        .detect-btn:disabled { opacity: 0.5; }
+        .detect-btn { padding: 14px 40px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green)); border: none; border-radius: 8px; color: var(--bg-dark); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: all 0.2s ease; }
+        .detect-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .detect-btn.active { background: var(--accent-yellow); color: var(--bg-dark); transform: scale(1.05); }
+        .detect-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3); }
         
         .canvas-wrapper {
             position: relative;
@@ -132,11 +133,10 @@
         const COLORS = ['#00d9ff', '#00ff9f'];
 
         function App() {
-            const [modelsLoaded, setModelsLoaded] = useState(false);
             const [video, setVideo] = useState(null);
             const [videoUrl, setVideoUrl] = useState(null);
             const [boxes, setBoxes] = useState([]);
-            const [processing, setProcessing] = useState(false);
+            const [cutMode, setCutMode] = useState(2); // 1 or 2 cuts
             const [seekTime, setSeekTime] = useState(10);
             const [dragging, setDragging] = useState(null);
             const [videoFrame, setVideoFrame] = useState(null);
@@ -147,8 +147,6 @@
             const canvasRef = useRef(null);
 
             useEffect(() => {
-                loadModels();
-
                 // Prevent default browser drag and drop behavior
                 const handleGlobalDragOver = (e) => e.preventDefault();
                 const handleGlobalDrop = (e) => e.preventDefault();
@@ -168,21 +166,19 @@
                 }
             }, [boxes, videoFrame]);
 
-            const loadModels = async () => {
-                try {
-                    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-                    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-                    setModelsLoaded(true);
-                } catch (error) {
-                    console.error('Model load error:', error);
-                }
-            };
+            useEffect(() => {
+                // Reset boxes when cut mode changes
+                setBoxes([]);
+            }, [cutMode]);
+
 
             const handleFileSelect = (file) => {
                 if (file && file.type.startsWith('video/')) {
                     setVideo(file);
                     setVideoUrl(URL.createObjectURL(file));
                     setBoxes([]);
+                    // Load the first frame
+                    setTimeout(() => loadVideoFrame(), 500);
                 }
             };
 
@@ -214,136 +210,111 @@
                 }
             };
 
-            const detectFaces = async () => {
-                if (!videoRef.current || !canvasRef.current || !modelsLoaded) return;
-                setProcessing(true);
+            const loadVideoFrame = async () => {
+                if (!videoRef.current || !canvasRef.current) return;
 
-                try {
-                    const videoEl = videoRef.current;
-                    const canvas = canvasRef.current;
-                    const ctx = canvas.getContext('2d');
+                const videoEl = videoRef.current;
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
 
-                    await new Promise((resolve) => {
-                        if (videoEl.readyState >= 1) resolve();
-                        else videoEl.onloadedmetadata = resolve;
-                    });
+                await new Promise((resolve) => {
+                    if (videoEl.readyState >= 1) resolve();
+                    else videoEl.onloadedmetadata = resolve;
+                });
 
-                    const width = videoEl.videoWidth;
-                    const height = videoEl.videoHeight;
-                    canvas.width = width;
-                    canvas.height = height;
+                const width = videoEl.videoWidth;
+                const height = videoEl.videoHeight;
+                canvas.width = width;
+                canvas.height = height;
 
-                    videoEl.currentTime = Math.min(seekTime, videoEl.duration - 1);
-                    await new Promise((resolve) => { videoEl.onseeked = resolve; });
-                    await new Promise(resolve => setTimeout(resolve, 200));
+                videoEl.currentTime = Math.min(seekTime, videoEl.duration - 1);
+                await new Promise((resolve) => { videoEl.onseeked = resolve; });
+                await new Promise(resolve => setTimeout(resolve, 200));
 
-                    ctx.drawImage(videoEl, 0, 0, width, height);
-                    
-                    // Store frame for redrawing
-                    setVideoFrame(ctx.getImageData(0, 0, width, height));
+                ctx.drawImage(videoEl, 0, 0, width, height);
 
-                    const detections = await faceapi.detectAllFaces(
-                        canvas,
-                        new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 })
-                    );
+                // Store frame for redrawing
+                setVideoFrame(ctx.getImageData(0, 0, width, height));
+            };
 
-                    if (detections.length === 0) {
-                        alert('No faces detected. Try a different timestamp (10-15s usually works).');
-                        setProcessing(false);
-                        return;
-                    }
+            const addRectangle = () => {
+                if (!canvasRef.current) return;
 
-                    // Sort by position (top-left to bottom-right)
-                    const faces = detections.map(d => {
-                        const box = d.box;
-                        return {
-                            centerX: box.x + box.width / 2,
-                            centerY: box.y + box.height / 2,
-                            box: box
-                        };
-                    });
+                const canvas = canvasRef.current;
+                const width = canvas.width;
+                const height = canvas.height;
 
-                    faces.sort((a, b) => {
-                        if (Math.abs(a.centerY - b.centerY) < height * 0.3) {
-                            return a.centerX - b.centerX;
-                        }
-                        return a.centerY - b.centerY;
-                    });
+                let newBox;
 
-                    // Take only first 2 faces
-                    const topTwoFaces = faces.slice(0, 2);
+                if (cutMode === 1) {
+                    // Single cut - full vertical reel (1080x1920)
+                    if (boxes.length >= 1) return; // Only allow one rectangle
 
-                    // Determine grid (assume 2x1 or 1x2 layout)
-                    let gridCols, gridRows;
-                    if (topTwoFaces.length === 2) {
-                        const yDiff = Math.abs(topTwoFaces[0].centerY - topTwoFaces[1].centerY);
-                        if (yDiff < height * 0.3) {
-                            gridCols = 2; gridRows = 1; // Side by side
-                        } else {
-                            gridCols = 1; gridRows = 2; // Top and bottom
-                        }
+                    const aspectRatio = 1080 / 1920;
+                    let boxWidth, boxHeight;
+
+                    // Fit 1080x1920 ratio within canvas
+                    const maxWidthFromHeight = height * aspectRatio;
+                    const maxHeightFromWidth = width / aspectRatio;
+
+                    if (maxWidthFromHeight <= width) {
+                        boxHeight = height * 0.8; // 80% of canvas height
+                        boxWidth = boxHeight * aspectRatio;
                     } else {
-                        gridCols = 1; gridRows = 1;
+                        boxWidth = width * 0.8; // 80% of canvas width
+                        boxHeight = boxWidth / aspectRatio;
                     }
 
-                    const cellWidth = width / gridCols;
-                    const cellHeight = height / gridRows;
+                    newBox = {
+                        id: 1,
+                        x: (width - boxWidth) / 2,
+                        y: (height - boxHeight) / 2,
+                        width: Math.floor(boxWidth),
+                        height: Math.floor(boxHeight),
+                        color: COLORS[0]
+                    };
+                } else {
+                    // Two cuts - half reels (1080x960 each)
+                    if (boxes.length >= 2) return; // Only allow two rectangles
 
-                    const initialBoxes = topTwoFaces.map((face, index) => {
-                        const col = Math.floor(face.centerX / cellWidth);
-                        const row = Math.floor(face.centerY / cellHeight);
+                    const aspectRatio = 1080 / 960;
+                    let boxWidth, boxHeight;
 
-                        let cellX = col * cellWidth;
-                        let cellY = row * cellHeight;
-                        let cellW = cellWidth;
-                        let cellH = cellHeight;
+                    // Fit 1080x960 ratio within canvas
+                    const maxWidthFromHeight = (height / 2) * aspectRatio;
+                    const maxHeightFromWidth = width / aspectRatio;
 
-                        const padding = 20;
-                        cellX += padding;
-                        cellY += padding;
-                        cellW -= padding * 2;
-                        cellH -= padding * 2;
+                    if (maxWidthFromHeight <= width) {
+                        boxHeight = (height / 2) * 0.8; // 80% of half canvas height
+                        boxWidth = boxHeight * aspectRatio;
+                    } else {
+                        boxWidth = width * 0.8; // 80% of canvas width
+                        boxHeight = boxWidth / aspectRatio;
+                    }
 
-                        // Make 9:8 aspect ratio (1080×960 - full width, half height)
-                        const aspectRatio = 1080 / 960;
-                        let x = cellX;
-                        let y = cellY;
-                        let w, h;
+                    const yOffset = boxes.length === 0 ? height * 0.1 : height * 0.6;
 
-                        // Calculate optimal size to fit in cell while maintaining 9:8
-                        const maxWidthFromHeight = cellH * aspectRatio;
-                        const maxHeightFromWidth = cellW / aspectRatio;
-
-                        if (maxWidthFromHeight <= cellW) {
-                            // Height constrains us
-                            h = cellH;
-                            w = h * aspectRatio;
-                            x = cellX + (cellW - w) / 2; // Center horizontally
-                        } else {
-                            // Width constrains us
-                            w = cellW;
-                            h = w / aspectRatio;
-                            y = cellY + (cellH - h) / 2; // Center vertically
-                        }
-
-                        return {
-                            id: index + 1,
-                            x: Math.floor(x),
-                            y: Math.floor(y),
-                            width: Math.floor(w),
-                            height: Math.floor(h),
-                            color: COLORS[index % COLORS.length]
-                        };
-                    });
-
-                    setBoxes(initialBoxes);
-                    setProcessing(false);
-
-                } catch (error) {
-                    console.error('Detection error:', error);
-                    alert('Detection failed: ' + error.message);
-                    setProcessing(false);
+                    newBox = {
+                        id: boxes.length + 1,
+                        x: (width - boxWidth) / 2,
+                        y: yOffset,
+                        width: Math.floor(boxWidth),
+                        height: Math.floor(boxHeight),
+                        color: COLORS[boxes.length % COLORS.length]
+                    };
                 }
+
+                setBoxes([...boxes, newBox]);
+            };
+
+            const removeRectangle = () => {
+                if (boxes.length > 0) {
+                    setBoxes(boxes.slice(0, -1));
+                }
+            };
+
+            const clearAllRectangles = () => {
+                setBoxes([]);
             };
 
             const redrawCanvas = () => {
@@ -388,10 +359,17 @@
 
             const syncBoxSize = (changedIndex, newWidth) => {
                 const newBoxes = [...boxes];
-                const aspectRatio = 1080 / 960; // 1080:960 ratio (9:8) for reel halves
-                const newHeight = newWidth / aspectRatio; // Calculate height to maintain 9:8
+                let aspectRatio;
 
-                // Update all boxes to same 1080×960 size
+                if (cutMode === 1) {
+                    aspectRatio = 1080 / 1920; // 1080:1920 ratio for full vertical reel
+                } else {
+                    aspectRatio = 1080 / 960; // 1080:960 ratio for half reels
+                }
+
+                const newHeight = newWidth / aspectRatio;
+
+                // Update all boxes to same size
                 newBoxes.forEach((box, index) => {
                     box.width = newWidth;
                     box.height = newHeight;
@@ -465,7 +443,14 @@
                     box.y = Math.max(0, Math.min(canvas.height - box.height, mouseY - dragging.startY));
                 } else if (dragging.type.startsWith('resize-')) {
                     const minWidth = 50;
-                    const aspectRatio = 1080 / 960; // 1080:960 ratio (9:8)
+                    let aspectRatio;
+
+                    if (cutMode === 1) {
+                        aspectRatio = 1080 / 1920; // 1080:1920 ratio for full vertical reel
+                    } else {
+                        aspectRatio = 1080 / 960; // 1080:960 ratio for half reels
+                    }
+
                     let newWidth = box.width;
 
                     if (dragging.type === 'resize-tl') {
@@ -509,20 +494,40 @@
                 <div className="container">
                     <div className="header">
                         <div className="logo">⚡ VIBE REEL</div>
-                        <h1>Dual Box Frame Detector</h1>
-                        <div className="subtitle">AI face detection → 1080×960 boxes → Stack for 1080×1920 reels</div>
+                        <h1>Video Cut Rectangle Tool</h1>
+                        <div className="subtitle">Manual rectangle positioning → 1 cut (1080×1920) or 2 cuts (1080×960 each)</div>
                     </div>
 
-                    {!modelsLoaded && <div className="loading"><div className="spinner"></div>Loading AI models...</div>}
-
-                    {modelsLoaded && !video && (
+                    {!video && (
                         <>
+                            <div className="controls">
+                                <div className="control-group">
+                                    <div className="control-label">Cut Mode</div>
+                                    <div style={{display: 'flex', gap: '10px'}}>
+                                        <button
+                                            className={`detect-btn ${cutMode === 1 ? 'active' : ''}`}
+                                            onClick={() => setCutMode(1)}
+                                            style={{padding: '8px 20px', fontSize: '12px'}}
+                                        >
+                                            1 Cut (1080×1920)
+                                        </button>
+                                        <button
+                                            className={`detect-btn ${cutMode === 2 ? 'active' : ''}`}
+                                            onClick={() => setCutMode(2)}
+                                            style={{padding: '8px 20px', fontSize: '12px'}}
+                                        >
+                                            2 Cuts (1080×960 each)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="info-box">
                                 <strong>🎯 How it works:</strong><br/>
-                                1. Upload video → AI detects first 2 faces<br/>
-                                2. Drag boxes to reposition | Drag corners to resize<br/>
-                                3. <strong>Boxes maintain 9:8 ratio & auto-sync size</strong> <span className="sync-badge">1080×960 EACH</span><br/>
-                                4. Copy FFmpeg commands → cut1.mp4 (1080×960), cut2.mp4 (1080×960), merged.mp4 (1080×1920)
+                                1. Choose cut mode (1 or 2 rectangles) → Upload video<br/>
+                                2. Add rectangles manually → Drag to reposition | Drag corners to resize<br/>
+                                3. <strong>{cutMode === 1 ? '1 rectangle (1080×1920)' : '2 rectangles (1080×960 each)'}</strong><br/>
+                                4. Copy FFmpeg commands → Perfect for vertical reels
                             </div>
                             
                             <div
@@ -546,17 +551,49 @@
                             <div className="controls">
                                 <div className="control-group">
                                     <div className="control-label">Timestamp (seconds)</div>
-                                    <input 
-                                        type="number" 
-                                        className="time-input" 
-                                        value={seekTime} 
-                                        onChange={(e) => setSeekTime(Number(e.target.value))} 
-                                        min="0" 
+                                    <input
+                                        type="number"
+                                        className="time-input"
+                                        value={seekTime}
+                                        onChange={(e) => setSeekTime(Number(e.target.value))}
+                                        min="0"
                                     />
                                 </div>
-                                <button className="detect-btn" onClick={detectFaces} disabled={processing}>
-                                    {processing ? 'Detecting Faces...' : '🔍 Detect Faces'}
+                                <button className="detect-btn" onClick={loadVideoFrame}>
+                                    🎬 Load Frame
                                 </button>
+                            </div>
+
+                            <div className="controls">
+                                <div className="control-group">
+                                    <div className="control-label">Rectangle Controls</div>
+                                    <div style={{display: 'flex', gap: '10px'}}>
+                                        <button
+                                            className="detect-btn"
+                                            onClick={addRectangle}
+                                            disabled={cutMode === 1 ? boxes.length >= 1 : boxes.length >= 2}
+                                            style={{padding: '8px 20px', fontSize: '12px'}}
+                                        >
+                                            ➕ Add Rectangle
+                                        </button>
+                                        <button
+                                            className="detect-btn"
+                                            onClick={removeRectangle}
+                                            disabled={boxes.length === 0}
+                                            style={{padding: '8px 20px', fontSize: '12px', background: 'var(--accent-red)'}}
+                                        >
+                                            ➖ Remove Last
+                                        </button>
+                                        <button
+                                            className="detect-btn"
+                                            onClick={clearAllRectangles}
+                                            disabled={boxes.length === 0}
+                                            style={{padding: '8px 20px', fontSize: '12px', background: 'var(--accent-red)'}}
+                                        >
+                                            🗑️ Clear All
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <video ref={videoRef} src={videoUrl} style={{display: 'none'}} />
@@ -574,7 +611,7 @@
                             
                             {boxes.length > 0 && (
                                 <div className="help-text">
-                                    ✨ Drag to move | Drag corners to resize <span className="sync-badge">1080×960</span> <span className="sync-badge">Both boxes resize together</span>
+                                    ✨ Drag to move | Drag corners to resize <span className="sync-badge">{cutMode === 1 ? '1080×1920' : '1080×960'}</span> {cutMode === 2 && boxes.length > 1 && <span className="sync-badge">Both boxes resize together</span>}
                                 </div>
                             )}
 
@@ -584,15 +621,16 @@
                                         <div key={box.id} className="participant-card">
                                             <div className="participant-id">
                                                 Cut {box.id}
-                                                {boxes.length > 1 && <span className="sync-badge">SYNCED SIZE</span>}
+                                                {cutMode === 2 && boxes.length > 1 && <span className="sync-badge">SYNCED SIZE</span>}
+                                                {cutMode === 1 && <span className="sync-badge">FULL REEL</span>}
                                             </div>
                                             <div className="coord-value">Position: ({box.x}, {box.y})</div>
                                             <div className="coord-value">Size: {box.width} × {box.height}</div>
                                             <div className="coord-value">crop={box.width}:{box.height}:{box.x}:{box.y}</div>
                                             <div className="ffmpeg-command">
                                                 <div className="ffmpeg-code">zsh -lc 'source ~/.zshrc; rm -rf cut{box.id}.mp4; ffmpeg -i video.mp4 -vf "crop={box.width}:{box.height}:{box.x}:{box.y}" -c:v libx264 -crf 18 -preset medium -c:a copy cut{box.id}.mp4'</div>
-                                                <button 
-                                                    className="copy-btn" 
+                                                <button
+                                                    className="copy-btn"
                                                     onClick={() => navigator.clipboard.writeText(
                                                         `zsh -lc 'source ~/.zshrc; rm -rf cut${box.id}.mp4; ffmpeg -i video.mp4 -vf "crop=${box.width}:${box.height}:${box.x}:${box.y}" -c:v libx264 -crf 18 -preset medium -c:a copy cut${box.id}.mp4'`
                                                     )}
